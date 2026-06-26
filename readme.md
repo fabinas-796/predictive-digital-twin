@@ -1,17 +1,17 @@
-# 🛡 InfraGuard AI
+#  InfraGuard AI
 ### AI-Powered Digital Twin Platform for IT Infrastructure Failure Prediction
 
 > Final Year MCA Project | AI/ML Specialization
 
 ---
 
-## 📌 Project Overview
+## Project Overview
 
 InfraGuard AI is a six-tier enterprise-grade infrastructure monitoring platform that implements a **Digital Twin** of IT infrastructure. It uses four complementary machine learning models to predict server failures before they occur, monitors 9 nodes in real time, generates automated PDF reports, and supports role-based access control with three user levels.
 
 ---
 
-## 🏗 System Architecture
+## System Architecture
 
 ```
 Tier 1 — Data Collection    → Real PC + 8 simulated servers (psutil)
@@ -24,7 +24,7 @@ Tier 6 — Reporting Engine   → PDF + CSV export
 
 ---
 
-## 🤖 AI Models
+## AI Models
 
 | Model | Type | Purpose |
 |-------|------|---------|
@@ -37,7 +37,7 @@ All 4 models combine into a **weighted prediction engine** that produces a unifi
 
 ---
 
-## 🖥 Dashboard Pages
+## Dashboard Pages
 
 | Page | URL | Description |
 |------|-----|-------------|
@@ -51,7 +51,7 @@ All 4 models combine into a **weighted prediction engine** that produces a unifi
 
 ---
 
-## ⚙ Technology Stack
+## Technology Stack
 
 | Layer | Technology |
 |-------|-----------|
@@ -66,7 +66,7 @@ All 4 models combine into a **weighted prediction engine** that produces a unifi
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 infraguard-ai/
@@ -97,7 +97,7 @@ infraguard-ai/
 
 ---
 
-## 🚀 Installation & Setup
+## Installation & Setup
 
 ### Prerequisites
 - Python 3.11+
@@ -126,7 +126,7 @@ http://localhost:5000
 
 ---
 
-## 👤 Default Login Credentials
+## Default Login Credentials
 
 | Username | Password | Role | Access Level |
 |----------|----------|------|-------------|
@@ -136,7 +136,7 @@ http://localhost:5000
 
 ---
 
-## 📊 Servers Monitored
+## Servers Monitored
 
 | Server ID | Name | Type |
 |-----------|------|------|
@@ -152,7 +152,7 @@ http://localhost:5000
 
 ---
 
-## 🔔 Alert Thresholds
+## Alert Thresholds
 
 | Metric | Warning | High | Critical |
 |--------|---------|------|----------|
@@ -165,7 +165,7 @@ http://localhost:5000
 
 ---
 
-## 🎯 API Endpoints
+## API Endpoints
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
@@ -185,13 +185,13 @@ http://localhost:5000
 
 ---
 
-## 🎓 Viva Summary
+## Summary
 
 *"InfraGuard AI is a six-tier enterprise monitoring platform that implements a Digital Twin of IT infrastructure. The AI engine uses four complementary machine learning models — Isolation Forest for unsupervised anomaly detection, Random Forest as an ensemble classifier for failure probability with explainable feature importance, LSTM for time-series forecasting, and an Autoencoder for deep pattern recognition. The system monitors 9 nodes in real time, generates automated PDF reports, and supports role-based access control with three user levels."*
 
 ---
 
-## 📅 Development Timeline
+## Development Timeline
 
 | Week | Work Done |
 |------|-----------|
