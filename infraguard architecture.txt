@@ -1,0 +1,218 @@
+full system architecture of the project
+
+
+
+
+╔════════════════════════════════════════════════════════════╗
+║              INFRAGUARD AI — COMPLETE SYSTEM           			  ║
+╠════════════════════════════════════════════════════════════╣
+║                                                            ║
+║  ┌─────────────────────────────────────────────────────┐  ║
+║  │  TIER 1 — DATA COLLECTION LAYER                                      │  ║
+║  │                                                      │  ║
+║  │  • Real PC metrics (psutil)                      		    │  ║
+║  │  • 8 Simulated servers with realistic behavior       │  ║
+║  │  • Network devices (Router, Firewall, Switch)        │  ║
+║  │  • Database servers (MySQL sim, Redis sim)           │  ║
+║  │  • Cloud services (AWS sim, CDN sim)                 │  ║
+║  │  • Metrics: CPU, RAM, Disk, Network, Temp,           │  ║
+║  │    Processes, Response Time, Error Rate              │  ║
+║  └─────────────────────────────────────────────────────┘  ║
+║                          │                                 ║
+║                          ▼                                 ║
+║  ┌─────────────────────────────────────────────────────┐  ║
+║  │  TIER 2 — AI / ML ENGINE (4 Models)                 │  ║
+║  │                                                      │  ║
+║  │  Model 1: Isolation Forest                           │  ║
+║  │           → Real-time anomaly detection              │  ║
+║  │           → Anomaly score 0.0 to 1.0                 │  ║
+║  │                                                      │  ║
+║  │  Model 2: Random Forest Classifier                   │  ║
+║  │           → Failure probability %                    │  ║
+║  │           → Feature importance (why it failed)       │  ║
+║  │                                                      │  ║
+║  │  Model 3: LSTM Neural Network                        │  ║
+║  │           → Forecasts next 30 minutes of metrics     │  ║
+║  │           → Estimates exact time to failure          │  ║
+║  │                                                      │  ║
+║  │  Model 4: Autoencoder Neural Network                 │  ║
+║  │           → Deep pattern recognition                 │  ║
+║  │           → Detects subtle long-term anomalies       │  ║
+║  │                                                      │  ║
+║  │  + Auto-Retraining Engine                            │  ║
+║  │    → Models retrain every 100 new readings           │  ║
+║  │    → Accuracy tracked and displayed                  │  ║
+║  └─────────────────────────────────────────────────────┘  ║
+║                          │                                 ║
+║                          ▼                                 ║
+║  ┌─────────────────────────────────────────────────────┐  ║
+║  │  TIER 3 — ALERT & NOTIFICATION ENGINE               │  ║
+║  │                                                      │  ║
+║  │  • 4 severity levels: INFO / WARNING / HIGH /        │  ║
+║  │    CRITICAL                                          │  ║
+║  │  • Alert deduplication (no spam)                     │  ║
+║  │  • Acknowledge / Resolve / Escalate alerts           │  ║
+║  │  • Alert history with full timeline                  │  ║
+║  │  • Email notification (optional)                     │  ║
+║  └─────────────────────────────────────────────────────┘  ║
+║                          │                                 ║
+║                          ▼                                 ║
+║  ┌─────────────────────────────────────────────────────┐  ║
+║  │  TIER 4 — USER & ACCESS LAYER                       │  ║
+║  │                                                      │  ║
+║  │  Role 1: Admin   → Full access, manage users         │  ║
+║  │  Role 2: Engineer → Monitor + manage alerts          │  ║
+║  │  Role 3: Viewer  → Read-only dashboard               │  ║
+║  │                                                      │  ║
+║  │  • Login / Logout with session                       │  ║
+║  │  • Each role sees different dashboard                │  ║
+║  └─────────────────────────────────────────────────────┘  ║
+║                          │                                 ║
+║                          ▼                                 ║
+║  ┌─────────────────────────────────────────────────────┐  ║
+║  │  TIER 5 — DASHBOARD (7 Pages)                       │  ║
+║  │                                                      │  ║
+║  │  Page 1: Login Screen                               │  ║
+║  │  Page 2: Overview — full system health at a glance  │  ║
+║  │  Page 3: Digital Twin Map — visual topology         │  ║
+║  │  Page 4: Server Drilldown — per server deep dive    │  ║
+║  │  Page 5: AI Models — compare all 4 models live      │  ║
+║  │  Page 6: Alerts Center — manage all alerts          │  ║
+║  │  Page 7: Reports — charts, trends, export PDF       │  ║
+║  └─────────────────────────────────────────────────────┘  ║
+║                          │                                 ║
+║                          ▼                                 ║
+║  ┌─────────────────────────────────────────────────────┐  ║
+║  │  TIER 6 — REPORTING ENGINE                          │  ║
+║  │                                                      │  ║
+║  │  • Auto-generate PDF health report                   │  ║
+║  │  • Charts embedded in PDF                            │  ║
+║  │  • Prediction summary                                │  ║
+║  │  • Export data as CSV                                │  ║
+║  └─────────────────────────────────────────────────────┘  ║
+║                                                            ║
+╚════════════════════════════════════════════════════════════╝
+
+
+
+
+complete file structure
+
+
+
+
+infraguard-ai/
+│
+├── app.py                        ← Main Flask server
+├── config.py                     ← All settings in one place
+├── database.py                   ← All DB operations
+├── collector.py                  ← Data collection engine
+├── alert_engine.py               ← Alert management
+├── report_engine.py              ← PDF + CSV generation
+│
+├── models/
+│   ├── __init__.py
+│   ├── isolation_forest.py       ← Model 1
+│   ├── random_forest.py          ← Model 2
+│   ├── lstm_model.py             ← Model 3
+│   ├── autoencoder.py            ← Model 4
+│   └── prediction_engine.py      ← Combines all 4 models
+│
+├── auth/
+│   ├── __init__.py
+│   └── routes.py                 ← Login/logout/sessions
+│
+├── templates/
+│   ├── login.html                ← Page 1
+│   ├── index.html                ← Page 2: Overview
+│   ├── twin.html                 ← Page 3: Digital Twin Map
+│   ├── servers.html              ← Page 4: Server Drilldown
+│   ├── ai_models.html            ← Page 5: AI Comparison
+│   ├── alerts.html               ← Page 6: Alert Center
+│   └── reports.html              ← Page 7: Reports
+│
+├── static/
+│   ├── css/
+│   │   └── style.css
+│   └── js/
+│       ├── dashboard.js
+│       ├── charts.js
+│       └── twin_map.js
+│
+└── docs/
+    ├── project_report.docx       ← Final report
+    └── presentation.pptx         ← Viva slides
+
+
+
+
+
+📅 6-Week Roadmap
+
+✅ WEEK 1 — Foundation & Data Layer
+Goal: Everything runs, data flows, database works
+DayTaskDay 1Setup project folder, install libraries, create config.pyDay 2Build database.py — 6 tables fully designedDay 3Build collector.py — real PC + 8 simulated serversDay 4Test data collection, verify all servers produce dataDay 5Build alert_engine.py — alert rules and deduplicationDay 6-7Test everything end to end, fix bugs
+End of Week 1 you will have:
+
+9 servers producing data every 3 seconds
+Database storing everything
+Alert system working
+Terminal showing live data
+
+
+✅ WEEK 2 — AI Models
+Goal: All 4 AI models running and predicting
+DayTaskDay 1Build Isolation Forest model + test itDay 2Build Random Forest model + feature importanceDay 3Build LSTM model + forecastingDay 4Build Autoencoder modelDay 5Build prediction_engine.py — combine all 4 modelsDay 6-7Test all models, tune parameters, verify predictions
+End of Week 2 you will have:
+
+4 AI models running on every server
+Combined risk score calculated
+Failure time estimation working
+Predictions saved to database
+
+
+✅ WEEK 3 — Backend & API
+Goal: Flask server with all API endpoints working
+DayTaskDay 1Build main app.py with all routesDay 2Build login system with 3 rolesDay 3Build all API endpoints for dashboardDay 4Build report_engine.py — PDF + CSV exportDay 5Build simulation mode — inject fake failuresDay 6-7Test all APIs, fix bugs
+End of Week 3 you will have:
+
+Full working backend
+Login system with Admin/Engineer/Viewer
+All 7 API endpoints working
+PDF report generation
+Failure simulation button
+
+
+✅ WEEK 4 — Dashboard UI
+Goal: All 7 pages built and connected to real data
+DayTaskDay 1Login page + Overview pageDay 2Digital Twin Map — visual topology with live statusDay 3Server Drilldown page — per server chartsDay 4AI Models comparison pageDay 5Alerts Center pageDay 6-7Reports page + PDF download button
+End of Week 4 you will have:
+
+Complete working system
+All pages connected to real data
+Live charts updating every 3 seconds
+Professional looking UI
+
+
+✅ WEEK 5 — Testing & Polish
+Goal: Everything works perfectly, looks professional
+DayTaskDay 1Full system testing — find all bugsDay 2Fix bugs, improve UI detailsDay 3Test simulation mode — inject failures for demoDay 4Write README.md — how to install and runDay 5Record a short screen demo video (good for viva)Day 6-7Final polish and cleanup
+
+✅ WEEK 6 — Documentation & Viva Prep
+Goal: Report, PPT, and ready to defend
+DayTaskDay 1-2Write full project report (I'll help write this)Day 3Create PPT presentation (I'll build this too)Day 4Prepare viva answers — 30 likely questions + answersDay 5Practice demo walkthroughDay 6-7Final review, submit
+
+🛠️ Technology Stack
+LayerTechnologyWhyBackendPython + FlaskIndustry standard, easy to runDatabaseSQLiteNo setup needed, file-basedAI Modelsscikit-learn + TensorFlowIndustry standard ML librariesFrontendHTML + CSS + JavaScriptRuns in any browserChartsChart.jsBeautiful live chartsPDF ReportsReportLabPython PDF generationAuthenticationFlask-LoginSecure session management
+
+🎓 What You Can Say at Viva
+
+"InfraGuard AI is a six-tier enterprise monitoring platform that implements a Digital Twin of IT infrastructure. The AI engine uses four complementary machine learning models — Isolation Forest for unsupervised anomaly detection, Random Forest as an ensemble classifier for failure probability with explainable feature importance, LSTM for time-series forecasting, and an Autoencoder for deep pattern recognition. The system monitors 9 nodes in real time, generates automated PDF reports, and supports role-based access control with three user levels."
+
+
+
+
+
+
+
+

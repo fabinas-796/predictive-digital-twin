@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InfraGuard AI — Overview</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <style>
+    :root{--bg:#020818;--bg2:#0a1628;--card:#0d1f3c;--border:#1a3a5c;--accent:#00d4ff;--accent2:#0088cc;--green:#00ff88;--yellow:#ffd700;--orange:#ff8c00;--red:#ff4757;--text:#e0e8f0;--muted:#4a6080;--font-mono:'Share Tech Mono',monospace;--font-main:'Rajdhani',sans-serif;}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--bg);color:var(--text);font-family:var(--font-main);min-height:100vh;display:flex;}
+    .sidebar{width:220px;min-height:100vh;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:100;}
+    .sidebar-logo{padding:24px 20px;border-bottom:1px solid var(--border);}
+    .sidebar-logo-title{font-size:20px;font-weight:700;letter-spacing:1px;}
+    .sidebar-logo-title span{color:var(--accent);}
+    .sidebar-logo-sub{font-family:var(--font-mono);font-size:9px;color:var(--muted);letter-spacing:2px;margin-top:4px;}
+    .sidebar-nav{flex:1;padding:16px 0;}
+    .nav-item{display:flex;align-items:center;gap:12px;padding:12px 20px;color:var(--muted);text-decoration:none;font-size:14px;font-weight:500;letter-spacing:1px;transition:all 0.2s ease;border-left:3px solid transparent;}
+    .nav-item:hover{color:var(--text);background:rgba(0,212,255,0.05);}
+    .nav-item.active{color:var(--accent);border-left-color:var(--accent);background:rgba(0,212,255,0.08);}
+    .nav-icon{font-size:16px;width:20px;text-align:center;}
+    .sidebar-footer{padding:16px 20px;border-top:1px solid var(--border);}
+    .user-info{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+    .user-avatar{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#000;}
+    .user-name{font-size:14px;font-weight:600;color:var(--text);}
+    .user-role{font-family:var(--font-mono);font-size:10px;color:var(--muted);}
+    .btn-logout{width:100%;padding:8px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-family:var(--font-mono);font-size:11px;cursor:pointer;transition:all 0.2s ease;letter-spacing:1px;}
+    .btn-logout:hover{border-color:var(--red);color:var(--red);}
+    .main{margin-left:220px;flex:1;padding:24px;}
+    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+    .page-title{font-size:24px;font-weight:700;letter-spacing:2px;}
+    .page-title span{color:var(--accent);}
+    .topbar-right{display:flex;align-items:center;gap:16px;}
+    .live-badge{display:flex;align-items:center;gap:6px;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.2);border-radius:20px;padding:6px 12px;font-family:var(--font-mono);font-size:11px;color:var(--green);}
+    .live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 1.5s infinite;}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+    .timestamp{font-family:var(--font-mono);font-size:11px;color:var(--muted);}
+    .role-banner{display:none;align-items:center;gap:10px;background:rgba(0,255,136,0.06);border:1px solid rgba(0,255,136,0.2);border-radius:8px;padding:10px 16px;margin-bottom:16px;font-family:var(--font-mono);font-size:11px;color:var(--green);}
+    .health-bar-wrap{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:24px;display:flex;align-items:center;gap:24px;}
+    .health-score{font-size:48px;font-weight:700;color:var(--green);font-family:var(--font-mono);min-width:100px;}
+    .health-label{font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:2px;}
+    .health-bar-bg{flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden;}
+    .health-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--green),var(--accent));transition:width 0.5s ease;}
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+    .stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;overflow:hidden;}
+    .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+    .stat-card.green::before{background:var(--green);}
+    .stat-card.blue::before{background:var(--accent);}
+    .stat-card.yellow::before{background:var(--yellow);}
+    .stat-card.red::before{background:var(--red);}
+    .stat-label{font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:2px;margin-bottom:8px;}
+    .stat-value{font-size:32px;font-weight:700;font-family:var(--font-mono);}
+    .stat-card.green .stat-value{color:var(--green);}
+    .stat-card.blue .stat-value{color:var(--accent);}
+    .stat-card.yellow .stat-value{color:var(--yellow);}
+    .stat-card.red .stat-value{color:var(--red);}
+    .stat-sub{font-size:12px;color:var(--muted);margin-top:4px;}
+    .section-title{font-family:var(--font-mono);font-size:11px;color:var(--accent);letter-spacing:3px;margin-bottom:16px;}
+    .servers-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;}
+    .server-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;transition:all 0.3s ease;cursor:pointer;}
+    .server-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.3);}
+    .server-card.risk-critical{border-color:var(--red);}
+    .server-card.risk-high{border-color:var(--orange);}
+    .server-card.risk-warning{border-color:var(--yellow);}
+    .server-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+    .server-name{font-size:15px;font-weight:600;letter-spacing:1px;}
+    .server-type{font-family:var(--font-mono);font-size:9px;color:var(--muted);letter-spacing:1px;margin-top:2px;}
+    .risk-badge{padding:3px 8px;border-radius:4px;font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:1px;}
+    .risk-ok{background:rgba(0,255,136,0.15);color:var(--green);}
+    .risk-warning{background:rgba(255,215,0,0.15);color:var(--yellow);}
+    .risk-high{background:rgba(255,140,0,0.15);color:var(--orange);}
+    .risk-critical{background:rgba(255,71,87,0.15);color:var(--red);}
+    .risk-medium{background:rgba(0,212,255,0.15);color:var(--accent);}
+    .server-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+    .metric-item{text-align:center;}
+    .metric-label{font-family:var(--font-mono);font-size:9px;color:var(--muted);letter-spacing:1px;}
+    .metric-value{font-family:var(--font-mono);font-size:16px;font-weight:700;color:var(--text);margin-top:2px;}
+    .metric-bar{height:3px;background:var(--border);border-radius:2px;margin-top:4px;overflow:hidden;}
+    .metric-bar-fill{height:100%;border-radius:2px;transition:width 0.5s ease;}
+    .bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+    .panel{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;}
+    .panel-title{font-family:var(--font-mono);font-size:11px;color:var(--accent);letter-spacing:2px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
+    .alert-count{background:var(--red);color:#fff;border-radius:10px;padding:2px 8px;font-size:10px;}
+    .alert-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+    .alert-item:last-child{border-bottom:none;}
+    .alert-sev{padding:2px 6px;border-radius:3px;font-family:var(--font-mono);font-size:9px;font-weight:700;white-space:nowrap;margin-top:2px;}
+    .sev-critical{background:rgba(255,71,87,0.2);color:var(--red);}
+    .sev-high{background:rgba(255,140,0,0.2);color:var(--orange);}
+    .sev-warning{background:rgba(255,215,0,0.2);color:var(--yellow);}
+    .alert-msg{font-size:13px;color:var(--text);line-height:1.4;}
+    .alert-server{font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-top:2px;}
+    .no-alerts{text-align:center;padding:24px;font-family:var(--font-mono);font-size:12px;color:var(--green);}
+    .chart-wrap{position:relative;height:200px;}
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="sidebar-logo-title">Infra<span>Guard</span> AI</div><div class="sidebar-logo-sub">MONITORING PLATFORM</div></div>
+    <nav class="sidebar-nav">
+      <a href="/overview" class="nav-item active"><span class="nav-icon">📊</span> Overview</a>
+      <a href="/twin"     class="nav-item"><span class="nav-icon">🌐</span> Digital Twin</a>
+      <a href="/servers"  class="nav-item"><span class="nav-icon">🖥️</span> Servers</a>
+      <a href="/ai"       class="nav-item"><span class="nav-icon">🤖</span> AI Models</a>
+      <a href="/alerts"   class="nav-item"><span class="nav-icon">🔔</span> Alerts<span id="navAlertCount" style="margin-left:auto;background:var(--red);color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;display:none;"></span></a>
+      <a href="/reports"  class="nav-item"><span class="nav-icon">📄</span> Reports</a>
+      <a href="/admin"    class="nav-item" id="adminLink" style="display:none"><span class="nav-icon">⚙️</span> Admin Panel</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info"><div class="user-avatar" id="userAvatar">A</div><div><div class="user-name" id="userName">Admin</div><div class="user-role" id="userRole">ADMIN</div></div></div>
+      <button class="btn-logout" onclick="logout()">LOGOUT</button>
+    </div>
+  </aside>
+  <main class="main">
+    <div class="topbar">
+      <div><div class="page-title">System <span>Overview</span></div></div>
+      <div class="topbar-right"><div class="live-badge"><div class="live-dot"></div>LIVE</div><div class="timestamp" id="timestamp">--:--:--</div></div>
+    </div>
+    <!-- Viewer banner -->
+    <div class="role-banner" id="roleBanner">
+      <span>👁</span> You are logged in as <strong style="color:var(--green);margin:0 4px;">VIEWER</strong> — read-only access. Simulation and alert management are disabled.
+    </div>
+    <div class="health-bar-wrap">
+      <div><div class="health-label">SYSTEM HEALTH</div><div class="health-score" id="healthScore">--%</div></div>
+      <div style="flex:1;"><div class="health-bar-bg"><div class="health-bar-fill" id="healthBarFill" style="width:0%"></div></div>
+      <div style="display:flex;justify-content:space-between;margin-top:8px;"><span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);">CRITICAL</span><span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);">OPTIMAL</span></div></div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card green"><div class="stat-label">TOTAL SERVERS</div><div class="stat-value" id="statTotal">9</div><div class="stat-sub">All nodes monitored</div></div>
+      <div class="stat-card blue"><div class="stat-label">ONLINE</div><div class="stat-value" id="statOnline">-</div><div class="stat-sub">Healthy servers</div></div>
+      <div class="stat-card yellow"><div class="stat-label">ACTIVE ALERTS</div><div class="stat-value" id="statAlerts">-</div><div class="stat-sub">Needs attention</div></div>
+      <div class="stat-card red"><div class="stat-label">CRITICAL</div><div class="stat-value" id="statCritical">-</div><div class="stat-sub">Immediate action</div></div>
+    </div>
+    <div class="section-title">— SERVER STATUS —</div>
+    <div class="servers-grid" id="serversGrid"></div>
+    <div class="bottom-grid">
+      <div class="panel">
+        <div class="panel-title">ACTIVE ALERTS<span class="alert-count" id="alertCountBadge">0</span></div>
+        <div id="alertsList"><div class="no-alerts">✅ No active alerts</div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">CPU USAGE — TOP SERVERS</div>
+        <div class="chart-wrap"><canvas id="cpuChart"></canvas></div>
+      </div>
+    </div>
+  </main>
+  <script>
+    let cpuChart = null;
+    function initChart() {
+      const ctx = document.getElementById('cpuChart').getContext('2d');
+      cpuChart = new Chart(ctx, { type:'bar', data:{ labels:[], datasets:[{ label:'CPU %', data:[], backgroundColor:'rgba(0,212,255,0.3)', borderColor:'#00d4ff', borderWidth:1, borderRadius:4 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{ticks:{color:'#4a6080',font:{family:'Share Tech Mono',size:9}},grid:{color:'#1a3a5c'}}, y:{min:0,max:100,ticks:{color:'#4a6080',font:{family:'Share Tech Mono',size:9}},grid:{color:'#1a3a5c'}} } } });
+    }
+    function riskClass(risk) { return {CRITICAL:'risk-critical',HIGH:'risk-high',WARNING:'risk-warning',MEDIUM:'risk-medium',OK:'risk-ok',LOW:'risk-ok'}[risk]||'risk-ok'; }
+    function metricColor(val,warn=70,crit=90) { if(val>=crit)return'#ff4757'; if(val>=warn)return'#ffd700'; return'#00ff88'; }
+    function renderServers(servers) {
+      const grid = document.getElementById('serversGrid'); grid.innerHTML='';
+      servers.forEach(s => {
+        const m=s.metrics||{},risk=s.risk||'OK',cpu=m.cpu||0,ram=m.ram||0,disk=m.disk||0;
+        grid.innerHTML+=`<div class="server-card risk-${risk.toLowerCase()}" onclick="window.location.href='/servers?id=${s.id}'">
+          <div class="server-header"><div><div class="server-name">${s.name}</div><div class="server-type">${s.type.toUpperCase()}</div></div><div class="risk-badge ${riskClass(risk)}">${risk}</div></div>
+          <div class="server-metrics">
+            <div class="metric-item"><div class="metric-label">CPU</div><div class="metric-value" style="color:${metricColor(cpu)}">${cpu.toFixed(1)}%</div><div class="metric-bar"><div class="metric-bar-fill" style="width:${cpu}%;background:${metricColor(cpu)}"></div></div></div>
+            <div class="metric-item"><div class="metric-label">RAM</div><div class="metric-value" style="color:${metricColor(ram)}">${ram.toFixed(1)}%</div><div class="metric-bar"><div class="metric-bar-fill" style="width:${ram}%;background:${metricColor(ram)}"></div></div></div>
+            <div class="metric-item"><div class="metric-label">DISK</div><div class="metric-value" style="color:${metricColor(disk,75,92)}">${disk.toFixed(1)}%</div><div class="metric-bar"><div class="metric-bar-fill" style="width:${disk}%;background:${metricColor(disk,75,92)}"></div></div></div>
+          </div></div>`; });
+    }
+    function renderAlerts(alerts) {
+      const list=document.getElementById('alertsList'),badge=document.getElementById('alertCountBadge'),nav=document.getElementById('navAlertCount');
+      const active=alerts.filter(a=>a.status==='active'); badge.textContent=active.length;
+      if(active.length>0){nav.textContent=active.length;nav.style.display='inline';}else{nav.style.display='none';}
+      if(active.length===0){list.innerHTML='<div class="no-alerts">✅ No active alerts</div>';return;}
+      list.innerHTML=active.slice(0,6).map(a=>`<div class="alert-item"><span class="alert-sev sev-${a.severity.toLowerCase()}">${a.severity}</span><div><div class="alert-msg">${a.message.substring(0,60)}...</div><div class="alert-server">${a.server_name} — ${a.created_at.substring(11,16)}</div></div></div>`).join('');
+    }
+    function updateChart(servers) {
+      if(!cpuChart)return; const top=servers.slice(0,6);
+      cpuChart.data.labels=top.map(s=>s.name.split(' ')[0]);
+      cpuChart.data.datasets[0].data=top.map(s=>s.metrics?.cpu||0);
+      cpuChart.data.datasets[0].backgroundColor=top.map(s=>{const c=s.metrics?.cpu||0;if(c>=90)return'rgba(255,71,87,0.4)';if(c>=70)return'rgba(255,215,0,0.4)';return'rgba(0,212,255,0.3)';});
+      cpuChart.update('none');
+    }
+    async function fetchOverview() {
+      try {
+        const res=await fetch('/api/overview'); if(res.status===401){window.location.href='/login';return;}
+        const data=await res.json(); const health=data.health||100;
+        document.getElementById('healthScore').textContent=health+'%';
+        document.getElementById('healthBarFill').style.width=health+'%';
+        document.getElementById('healthScore').style.color=health>=80?'var(--green)':health>=60?'var(--yellow)':'var(--red)';
+        const alerts=data.alerts||{},servers=data.servers||[];
+        const online=servers.filter(s=>s.risk==='OK'||s.risk==='LOW').length;
+        document.getElementById('statOnline').textContent=online;
+        document.getElementById('statAlerts').textContent=alerts.total||0;
+        document.getElementById('statCritical').textContent=alerts.CRITICAL||0;
+        document.getElementById('timestamp').textContent=data.timestamp||'';
+        renderServers(servers); updateChart(servers);
+        const ar=await fetch('/api/alerts?status=active'); const ad=await ar.json(); renderAlerts(ad.alerts||[]);
+      } catch(e){console.error(e);}
+    }
+        async function loadUser() {
+      try {
+        const res  = await fetch('/api/me');
+        const data = await res.json();
+        if (!data.logged_in) { window.location.href = '/login'; return; }
+        const role = data.role;
+        document.getElementById('userName').textContent   = data.username;
+        document.getElementById('userRole').textContent  = role.toUpperCase();
+        document.getElementById('userAvatar').textContent= data.username[0].toUpperCase();
+        // Role badge colour
+        const rc = { admin:'#ff4757', engineer:'#ffd700', viewer:'#00ff88' };
+        document.getElementById('userRole').style.color = rc[role] || '#4a6080';
+        // Admin link
+        const adminLink = document.getElementById('adminLink');
+        if (adminLink) adminLink.style.display = role === 'admin' ? 'flex' : 'none';
+        // Hide simulate btn from viewer
+        const simBtn = document.getElementById('simulateBtn');
+        if (simBtn && role === 'viewer') simBtn.style.display = 'none';
+        // Hide action buttons from viewer
+        if (role === 'viewer') {
+          document.querySelectorAll('.action-btn').forEach(b => b.style.display = 'none');
+        }
+        // Show viewer banner
+        const banner = document.getElementById('roleBanner');
+        if (banner && role === 'viewer') banner.style.display = 'flex';
+      } catch(e) { window.location.href = '/login'; }
+    }
+    async function logout() {
+      await fetch('/api/logout', { method: 'POST' });
+      window.location.href = '/login';
+    }
+    initChart(); loadUser(); fetchOverview(); setInterval(fetchOverview,3000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InfraGuard AI — AI Models</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg:        #020818;
+      --bg2:       #0a1628;
+      --card:      #0d1f3c;
+      --border:    #1a3a5c;
+      --accent:    #00d4ff;
+      --accent2:   #0088cc;
+      --green:     #00ff88;
+      --yellow:    #ffd700;
+      --orange:    #ff8c00;
+      --red:       #ff4757;
+      --purple:    #a855f7;
+      --text:      #e0e8f0;
+      --muted:     #4a6080;
+      --font-mono: 'Share Tech Mono', monospace;
+      --font-main: 'Rajdhani', sans-serif;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 220px; min-height: 100vh;
+      background: var(--bg2);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      position: fixed; top: 0; left: 0; z-index: 100;
+    }
+    .sidebar-logo { padding: 24px 20px; border-bottom: 1px solid var(--border); }
+    .sidebar-logo-title { font-size: 20px; font-weight: 700; letter-spacing: 1px; }
+    .sidebar-logo-title span { color: var(--accent); }
+    .sidebar-logo-sub { font-family: var(--font-mono); font-size: 9px; color: var(--muted); letter-spacing: 2px; margin-top: 4px; }
+    .sidebar-nav { flex: 1; padding: 16px 0; }
+    .nav-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 20px; color: var(--muted);
+      text-decoration: none; font-size: 14px; font-weight: 500;
+      letter-spacing: 1px; transition: all 0.2s ease;
+      border-left: 3px solid transparent;
+    }
+    .nav-item:hover { color: var(--text); background: rgba(0,212,255,0.05); }
+    .nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(0,212,255,0.08); }
+    .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+    .sidebar-footer { padding: 16px 20px; border-top: 1px solid var(--border); }
+    .user-info { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .user-avatar {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700; color: #000;
+    }
+    .user-name { font-size: 14px; font-weight: 600; color: var(--text); }
+    .user-role { font-family: var(--font-mono); font-size: 10px; color: var(--muted); }
+    .btn-logout {
+      width: 100%; padding: 8px; background: transparent;
+      border: 1px solid var(--border); border-radius: 6px;
+      color: var(--muted); font-family: var(--font-mono);
+      font-size: 11px; cursor: pointer; transition: all 0.2s ease; letter-spacing: 1px;
+    }
+    .btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+    /* ── Main ── */
+    .main { margin-left: 220px; flex: 1; padding: 24px; }
+    .topbar {
+      display: flex; align-items: center;
+      justify-content: space-between; margin-bottom: 24px;
+    }
+    .page-title { font-size: 24px; font-weight: 700; letter-spacing: 2px; }
+    .page-title span { color: var(--accent); }
+    .live-badge {
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(0,255,136,0.1);
+      border: 1px solid rgba(0,255,136,0.2);
+      border-radius: 20px; padding: 6px 12px;
+      font-family: var(--font-mono); font-size: 11px; color: var(--green);
+    }
+    .live-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--green); animation: blink 1.5s infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+    /* ── Model cards ── */
+    .models-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .model-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    .model-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+    }
+    .model-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+    .model-card.if::before  { background: var(--accent); }
+    .model-card.rf::before  { background: var(--green); }
+    .model-card.lstm::before { background: var(--yellow); }
+    .model-card.ae::before  { background: var(--purple); }
+
+    .model-icon {
+      font-size: 28px; margin-bottom: 10px;
+    }
+    .model-name {
+      font-size: 15px; font-weight: 700;
+      letter-spacing: 1px; margin-bottom: 4px;
+    }
+    .model-type {
+      font-family: var(--font-mono);
+      font-size: 9px; color: var(--muted);
+      letter-spacing: 2px; margin-bottom: 16px;
+    }
+    .model-score {
+      font-family: var(--font-mono);
+      font-size: 32px; font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .model-card.if   .model-score { color: var(--accent); }
+    .model-card.rf   .model-score { color: var(--green); }
+    .model-card.lstm .model-score { color: var(--yellow); }
+    .model-card.ae   .model-score { color: var(--purple); }
+    .model-score-label {
+      font-family: var(--font-mono);
+      font-size: 9px; color: var(--muted); letter-spacing: 1px;
+    }
+    .model-desc {
+      font-size: 12px; color: var(--muted);
+      margin-top: 12px; line-height: 1.5;
+      border-top: 1px solid var(--border);
+      padding-top: 12px;
+    }
+
+    /* ── Server selector ── */
+    .server-select-row {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 20px;
+    }
+    .server-select-label {
+      font-family: var(--font-mono);
+      font-size: 11px; color: var(--muted); letter-spacing: 2px;
+    }
+    .server-select {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 8px 14px;
+      outline: none;
+      cursor: pointer;
+    }
+    .server-select:focus { border-color: var(--accent); }
+
+    /* ── Comparison table ── */
+    .section-title {
+      font-family: var(--font-mono);
+      font-size: 10px; color: var(--accent);
+      letter-spacing: 3px; margin-bottom: 16px;
+    }
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+    }
+    .compare-table th {
+      background: var(--bg2);
+      font-family: var(--font-mono);
+      font-size: 10px; color: var(--accent);
+      letter-spacing: 2px; padding: 12px 16px;
+      text-align: left; border-bottom: 1px solid var(--border);
+    }
+    .compare-table td {
+      padding: 12px 16px;
+      font-size: 13px;
+      border-bottom: 1px solid var(--border);
+      background: var(--card);
+    }
+    .compare-table tr:hover td { background: rgba(0,212,255,0.03); }
+    .score-cell {
+      font-family: var(--font-mono);
+      font-weight: 700;
+    }
+    .score-bar-wrap {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .score-bar-bg {
+      flex: 1; height: 4px;
+      background: var(--border);
+      border-radius: 2px; overflow: hidden;
+    }
+    .score-bar-fill {
+      height: 100%; border-radius: 2px;
+      transition: width 0.5s ease;
+    }
+
+    /* ── Charts row ── */
+    .charts-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .chart-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .chart-title {
+      font-family: var(--font-mono);
+      font-size: 10px; color: var(--accent);
+      letter-spacing: 2px; margin-bottom: 16px;
+    }
+    .chart-wrap { position: relative; height: 200px; }
+
+    /* ── Risk level badge ── */
+    .risk-badge {
+      padding: 3px 10px; border-radius: 4px;
+      font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+    }
+    .risk-critical { background: rgba(255,71,87,0.2);  color: #ff4757; }
+    .risk-high     { background: rgba(255,140,0,0.2);  color: #ff8c00; }
+    .risk-medium   { background: rgba(0,212,255,0.2);  color: #00d4ff; }
+    .risk-low      { background: rgba(0,255,136,0.2);  color: #00ff88; }
+  </style>
+</head>
+<body>
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-title">Infra<span>Guard</span> AI</div>
+      <div class="sidebar-logo-sub">MONITORING PLATFORM</div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/overview" class="nav-item"><span class="nav-icon">📊</span> Overview</a>
+      <a href="/twin"     class="nav-item"><span class="nav-icon">🌐</span> Digital Twin</a>
+      <a href="/servers"  class="nav-item"><span class="nav-icon">🖥️</span> Servers</a>
+      <a href="/ai"       class="nav-item active"><span class="nav-icon">🤖</span> AI Models</a>
+      <a href="/alerts"   class="nav-item"><span class="nav-icon">🔔</span> Alerts</a>
+      <a href="/reports"  class="nav-item"><span class="nav-icon">📄</span> Reports</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar" id="userAvatar">A</div>
+        <div>
+          <div class="user-name" id="userName">Admin</div>
+          <div class="user-role" id="userRole">ADMIN</div>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="logout()">LOGOUT</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="page-title">AI <span>Models</span></div>
+      <div class="live-badge"><div class="live-dot"></div> LIVE PREDICTIONS</div>
+    </div>
+
+    <!-- Model summary cards -->
+    <div class="models-grid">
+      <div class="model-card if">
+        <div class="model-icon">🌲</div>
+        <div class="model-name">Isolation Forest</div>
+        <div class="model-type">ANOMALY DETECTION</div>
+        <div class="model-score" id="ifScore">--%</div>
+        <div class="model-score-label">AVG ANOMALY SCORE</div>
+        <div class="model-desc">Detects sudden spikes and outliers by isolating anomalous readings from normal clusters.</div>
+      </div>
+      <div class="model-card rf">
+        <div class="model-icon">🌳</div>
+        <div class="model-name">Random Forest</div>
+        <div class="model-type">FAILURE CLASSIFIER</div>
+        <div class="model-score" id="rfScore">--%</div>
+        <div class="model-score-label">AVG FAILURE PROBABILITY</div>
+        <div class="model-desc">Ensemble of 100 decision trees predicting failure probability with feature importance.</div>
+      </div>
+      <div class="model-card lstm">
+        <div class="model-icon">🧠</div>
+        <div class="model-name">LSTM Network</div>
+        <div class="model-type">TIME SERIES FORECAST</div>
+        <div class="model-score" id="lstmScore">--%</div>
+        <div class="model-score-label">AVG URGENCY SCORE</div>
+        <div class="model-desc">Forecasts next 30 minutes of metrics using sequence memory to estimate time to failure.</div>
+      </div>
+      <div class="model-card ae">
+        <div class="model-icon">🔮</div>
+        <div class="model-name">Autoencoder</div>
+        <div class="model-type">PATTERN RECOGNITION</div>
+        <div class="model-score" id="aeScore">--%</div>
+        <div class="model-score-label">AVG RECONSTRUCTION ERROR</div>
+        <div class="model-desc">Neural network that learns normal patterns and flags deviations through reconstruction error.</div>
+      </div>
+    </div>
+
+    <!-- Server selector -->
+    <div class="server-select-row">
+      <span class="server-select-label">ANALYSE SERVER:</span>
+      <select class="server-select" id="serverSelect" onchange="onServerChange()">
+        <option value="all">All Servers</option>
+      </select>
+    </div>
+
+    <!-- Comparison table -->
+    <div class="section-title">— PER SERVER AI COMPARISON —</div>
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>SERVER</th>
+          <th>COMBINED RISK</th>
+          <th>ISOLATION FOREST</th>
+          <th>RANDOM FOREST</th>
+          <th>LSTM</th>
+          <th>AUTOENCODER</th>
+          <th>TIME TO FAILURE</th>
+        </tr>
+      </thead>
+      <tbody id="compareTable">
+        <tr><td colspan="7" style="text-align:center; color:var(--muted); font-family:var(--font-mono); font-size:11px; padding:24px;">Loading AI data...</td></tr>
+      </tbody>
+    </table>
+
+    <!-- Charts -->
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title">COMBINED RISK SCORE — ALL SERVERS</div>
+        <div class="chart-wrap"><canvas id="riskChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">MODEL COMPARISON — SELECTED SERVER</div>
+        <div class="chart-wrap"><canvas id="modelChart"></canvas></div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    let predictions = {};
+    let riskChart, modelChart;
+    let selectedServer = 'all';
+
+    function initCharts() {
+      // Risk bar chart
+      const ctx1 = document.getElementById('riskChart').getContext('2d');
+      riskChart = new Chart(ctx1, {
+        type: 'bar',
+        data: { labels: [], datasets: [{
+          label: 'Combined Risk %',
+          data: [],
+          backgroundColor: [],
+          borderColor: [],
+          borderWidth: 1,
+          borderRadius: 4,
+        }]},
+        options: {
+          responsive: true, maintainAspectRatio: false, animation: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color:'#4a6080', font:{family:'Share Tech Mono',size:9} }, grid:{color:'#1a3a5c'} },
+            y: { min:0, max:100, ticks:{color:'#4a6080',font:{family:'Share Tech Mono',size:9}}, grid:{color:'#1a3a5c'} }
+          }
+        }
+      });
+
+      // Model radar chart
+      const ctx2 = document.getElementById('modelChart').getContext('2d');
+      modelChart = new Chart(ctx2, {
+        type: 'radar',
+        data: {
+          labels: ['Isolation Forest','Random Forest','LSTM','Autoencoder'],
+          datasets: [{
+            label: 'Score %',
+            data: [0, 0, 0, 0],
+            backgroundColor: 'rgba(0,212,255,0.15)',
+            borderColor: '#00d4ff',
+            borderWidth: 2,
+            pointBackgroundColor: '#00d4ff',
+            pointRadius: 4,
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false, animation: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            r: {
+              min: 0, max: 100,
+              ticks: { color:'#4a6080', font:{family:'Share Tech Mono',size:8}, backdropColor:'transparent' },
+              grid: { color:'#1a3a5c' },
+              pointLabels: { color:'#4a6080', font:{family:'Share Tech Mono',size:9} }
+            }
+          }
+        }
+      });
+    }
+
+    function riskColor(score) {
+      if (score >= 75) return '#ff4757';
+      if (score >= 50) return '#ff8c00';
+      if (score >= 25) return '#ffd700';
+      return '#00ff88';
+    }
+
+    function riskLevel(score) {
+      if (score >= 75) return 'CRITICAL';
+      if (score >= 50) return 'HIGH';
+      if (score >= 25) return 'MEDIUM';
+      return 'LOW';
+    }
+
+    function renderTable(preds) {
+      const tbody = document.getElementById('compareTable');
+      const entries = Object.entries(preds);
+      if (!entries.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:24px;">No prediction data yet — AI is warming up...</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = entries.map(([sid, p]) => {
+        if (!p) return '';
+        const md      = parseMd(p);
+        const scores  = md.model_scores || {};
+        const combined = md.combined_score || 0;
+        const risk    = riskLevel(combined);
+        const col     = riskColor(combined);
+        const ttf     = (p.time_to_failure || 'N/A').substring(0, 35);
+        const name    = sid.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+
+        const scoreBar = (val, color) => `
+          <div class="score-bar-wrap">
+            <span class="score-cell" style="color:${color}; min-width:40px">${val.toFixed(0)}%</span>
+            <div class="score-bar-bg">
+              <div class="score-bar-fill" style="width:${val}%;background:${color}"></div>
+            </div>
+          </div>`;
+
+        return `<tr>
+          <td style="font-weight:600">${name}</td>
+          <td><span class="risk-badge risk-${risk.toLowerCase()}">${risk}</span></td>
+          <td>${scoreBar(scores.isolation_forest||0, '#00d4ff')}</td>
+          <td>${scoreBar(scores.random_forest||0,    '#00ff88')}</td>
+          <td>${scoreBar(scores.lstm||0,             '#ffd700')}</td>
+          <td>${scoreBar(scores.autoencoder||0,      '#a855f7')}</td>
+          <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">${ttf}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    function parseMd(p) {
+      if (!p.model_details) return {};
+      try {
+        return typeof p.model_details === 'string'
+          ? JSON.parse(p.model_details) : p.model_details;
+      } catch(e) { return {}; }
+    }
+
+    function updateSummaryCards(preds) {
+      const entries = Object.values(preds).filter(Boolean);
+      if (!entries.length) return;
+
+      let ifTotal=0, rfTotal=0, lstmTotal=0, aeTotal=0, count=0;
+      entries.forEach(p => {
+        const md = parseMd(p);
+        const s  = md.model_scores || {};
+        ifTotal   += s.isolation_forest || 0;
+        rfTotal   += s.random_forest    || 0;
+        lstmTotal += s.lstm             || 0;
+        aeTotal   += s.autoencoder      || 0;
+        count++;
+      });
+
+      if (count > 0) {
+        document.getElementById('ifScore').textContent   = (ifTotal/count).toFixed(1)   + '%';
+        document.getElementById('rfScore').textContent   = (rfTotal/count).toFixed(1)   + '%';
+        document.getElementById('lstmScore').textContent = (lstmTotal/count).toFixed(1) + '%';
+        document.getElementById('aeScore').textContent   = (aeTotal/count).toFixed(1)   + '%';
+      }
+    }
+
+    function updateRiskChart(preds) {
+      const entries = Object.entries(preds).filter(([,v])=>v);
+      const labels  = entries.map(([k]) => k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()).split(' ')[0]);
+      const scores  = entries.map(([,p]) => { const md=parseMd(p); return md.combined_score||0; });
+      const colors  = scores.map(s => riskColor(s));
+
+      riskChart.data.labels                            = labels;
+      riskChart.data.datasets[0].data                 = scores;
+      riskChart.data.datasets[0].backgroundColor      = colors.map(c=>c+'44');
+      riskChart.data.datasets[0].borderColor          = colors;
+      riskChart.update('none');
+    }
+
+    function updateModelChart(sid) {
+      const p = predictions[sid];
+      if (!p) return;
+      const md = parseMd(p);
+      const s  = md.model_scores || {};
+      modelChart.data.datasets[0].data = [
+        s.isolation_forest || 0,
+        s.random_forest    || 0,
+        s.lstm             || 0,
+        s.autoencoder      || 0,
+      ];
+      modelChart.update('none');
+    }
+
+    function populateServerSelect(preds) {
+      const sel = document.getElementById('serverSelect');
+      const existing = Array.from(sel.options).map(o=>o.value);
+      Object.keys(preds).forEach(sid => {
+        if (!existing.includes(sid)) {
+          const name = sid.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+          sel.innerHTML += `<option value="${sid}">${name}</option>`;
+        }
+      });
+    }
+
+    function onServerChange() {
+      selectedServer = document.getElementById('serverSelect').value;
+      if (selectedServer !== 'all') updateModelChart(selectedServer);
+    }
+
+    async function fetchPredictions() {
+      try {
+        const res  = await fetch('/api/predictions');
+        if (res.status === 401) { window.location.href='/login'; return; }
+        predictions = await res.json();
+
+        renderTable(predictions);
+        updateSummaryCards(predictions);
+        updateRiskChart(predictions);
+        populateServerSelect(predictions);
+
+        if (selectedServer !== 'all') updateModelChart(selectedServer);
+        else {
+          const first = Object.keys(predictions)[0];
+          if (first) updateModelChart(first);
+        }
+      } catch(e) { console.error(e); }
+    }
+
+    async function loadUser() {
+      try {
+        const res  = await fetch('/api/me');
+        const data = await res.json();
+        if (data.logged_in) {
+          document.getElementById('userName').textContent   = data.username;
+          document.getElementById('userRole').textContent  = data.role.toUpperCase();
+          document.getElementById('userAvatar').textContent= data.username[0].toUpperCase();
+        }
+      } catch(e) {}
+    }
+
+    async function logout() {
+      await fetch('/api/logout', { method: 'POST' });
+      window.location.href = '/login';
+    }
+
+    initCharts();
+    loadUser();
+    fetchPredictions();
+    setInterval(fetchPredictions, 5000);
+  </script>
+
+</body>
+</html>

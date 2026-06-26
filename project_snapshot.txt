@@ -1,0 +1,99 @@
+=== INFRAGUARD AI — COMPLETE PROJECT SNAPSHOT ===
+
+--- FILE STRUCTURE ---
+./
+  alert_engine.py
+  app.py
+  collector.py
+  config.py
+  cookies.txt
+  database.py
+  infraguard.db
+  project_snapshot.txt
+  report_engine.py
+  simulate.py
+  snapshot.py
+  auth/
+    __init__.py
+  docs/
+    infraguard_test_report.pdf
+  models/
+    autoencoder.py
+    isolation_forest.py
+    lstm_model.py
+    prediction_engine.py
+    random_forest.py
+    __init__.py
+  static/
+    css/
+    js/
+  templates/
+    ai_models.html
+    alerts.html
+    index.html
+    login.html
+    reports.html
+    servers.html
+    twin.html
+
+--- DATABASE TABLES ---
+  users                -> 3 rows
+  sqlite_sequence      -> 4 rows
+  servers              -> 9 rows
+  metrics              -> 40908 rows
+  alerts               -> 508 rows
+  predictions          -> 8168 rows
+  model_accuracy       -> 0 rows
+
+--- EXACT IMPORTS (use these in every new file) ---
+  from config import Config
+  from database import init_db, save_metric, get_metric_history, get_latest_metric
+  from database import create_alert, get_active_alerts, resolve_alert, auto_resolve_alerts
+  from database import save_prediction, get_latest_prediction, get_metric_count
+  from database import verify_user, get_all_users, get_all_servers, update_server_status
+  from collector import CollectionEngine
+  from alert_engine import check_server, check_all_servers, get_alert_summary, get_server_risk_level
+  from models.isolation_forest import IsolationForestManager
+  from models.random_forest import RandomForestManager
+  from models.lstm_model import LSTMManager
+  from models.autoencoder import AutoencoderManager
+  from models.prediction_engine import PredictionEngine
+
+--- CONFIG CLASS KEYS ---
+  Config.SECRET_KEY          = infraguard-secret-key-2024
+  Config.COLLECTION_INTERVAL = 3
+  Config.AI_RETRAIN_EVERY    = 100
+  Config.LSTM_SEQUENCE_LENGTH= 20
+  Config.DATABASE_PATH       = C:\Users\FAYAS\infraguard-ai\infraguard.db
+
+  SERVERS (9 total):
+    pc_local        | Local PC             | physical
+    web_server_1    | Web Server 1         | web
+    web_server_2    | Web Server 2         | web
+    app_server      | App Server           | application
+    db_mysql        | MySQL Database       | database
+    db_redis        | Redis Cache          | cache
+    cloud_aws       | AWS Instance         | cloud
+    cdn_server      | CDN Server           | cdn
+    firewall        | Firewall             | network
+
+  ALERT_THRESHOLDS keys: ['cpu', 'ram', 'disk', 'temperature', 'error_rate', 'response_time']
+
+  DEFAULT_USERS:
+    username=admin      password=admin123   role=admin
+    username=engineer   password=eng123     role=engineer
+    username=viewer     password=view123    role=viewer
+
+  ROLES: ['admin', 'engineer', 'viewer']
+
+--- IMPORTANT RULES FOR ANY NEW CHAT ---
+  1. Class is named "Config" not "CONFIG"
+  2. database.py has individual functions, NOT a Database class
+  3. Always run files from C:\Users\FAYAS\infraguard-ai
+  4. Models folder files need sys.path fix at top:
+       import sys, os
+       sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+  5. Week completed: Week 1 + Week 2 fully done
+  6. Next step: Week 3 Day 1 - build app.py (Flask server)
+
+=== END OF SNAPSHOT ===

@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InfraGuard AI — Alerts</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:        #020818;
+      --bg2:       #0a1628;
+      --card:      #0d1f3c;
+      --border:    #1a3a5c;
+      --accent:    #00d4ff;
+      --accent2:   #0088cc;
+      --green:     #00ff88;
+      --yellow:    #ffd700;
+      --orange:    #ff8c00;
+      --red:       #ff4757;
+      --text:      #e0e8f0;
+      --muted:     #4a6080;
+      --font-mono: 'Share Tech Mono', monospace;
+      --font-main: 'Rajdhani', sans-serif;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 220px; min-height: 100vh;
+      background: var(--bg2);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      position: fixed; top: 0; left: 0; z-index: 100;
+    }
+    .sidebar-logo { padding: 24px 20px; border-bottom: 1px solid var(--border); }
+    .sidebar-logo-title { font-size: 20px; font-weight: 700; letter-spacing: 1px; }
+    .sidebar-logo-title span { color: var(--accent); }
+    .sidebar-logo-sub { font-family: var(--font-mono); font-size: 9px; color: var(--muted); letter-spacing: 2px; margin-top: 4px; }
+    .sidebar-nav { flex: 1; padding: 16px 0; }
+    .nav-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 20px; color: var(--muted);
+      text-decoration: none; font-size: 14px; font-weight: 500;
+      letter-spacing: 1px; transition: all 0.2s ease;
+      border-left: 3px solid transparent;
+    }
+    .nav-item:hover { color: var(--text); background: rgba(0,212,255,0.05); }
+    .nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(0,212,255,0.08); }
+    .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+    .sidebar-footer { padding: 16px 20px; border-top: 1px solid var(--border); }
+    .user-info { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .user-avatar {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700; color: #000;
+    }
+    .user-name { font-size: 14px; font-weight: 600; color: var(--text); }
+    .user-role { font-family: var(--font-mono); font-size: 10px; color: var(--muted); }
+    .btn-logout {
+      width: 100%; padding: 8px; background: transparent;
+      border: 1px solid var(--border); border-radius: 6px;
+      color: var(--muted); font-family: var(--font-mono);
+      font-size: 11px; cursor: pointer; transition: all 0.2s ease; letter-spacing: 1px;
+    }
+    .btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+    /* ── Main ── */
+    .main { margin-left: 220px; flex: 1; padding: 24px; }
+    .topbar {
+      display: flex; align-items: center;
+      justify-content: space-between; margin-bottom: 24px;
+    }
+    .page-title { font-size: 24px; font-weight: 700; letter-spacing: 2px; }
+    .page-title span { color: var(--accent); }
+
+    /* ── Summary cards ── */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .summary-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .summary-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+    .summary-card.total::before    { background: var(--accent); }
+    .summary-card.critical::before { background: var(--red); }
+    .summary-card.high::before     { background: var(--orange); }
+    .summary-card.warning::before  { background: var(--yellow); }
+
+    .summary-label {
+      font-family: var(--font-mono);
+      font-size: 9px; color: var(--muted);
+      letter-spacing: 2px; margin-bottom: 8px;
+    }
+    .summary-value {
+      font-family: var(--font-mono);
+      font-size: 36px; font-weight: 700;
+    }
+    .summary-card.total    .summary-value { color: var(--accent); }
+    .summary-card.critical .summary-value { color: var(--red); }
+    .summary-card.high     .summary-value { color: var(--orange); }
+    .summary-card.warning  .summary-value { color: var(--yellow); }
+
+    /* ── Filter bar ── */
+    .filter-bar {
+      display: flex; align-items: center;
+      gap: 10px; margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      padding: 7px 16px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 11px; cursor: pointer;
+      transition: all 0.2s ease; letter-spacing: 1px;
+    }
+    .filter-btn:hover { border-color: var(--accent); color: var(--text); }
+    .filter-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(0,212,255,0.08); }
+    .filter-btn.critical.active { border-color: var(--red);    color: var(--red);    background: rgba(255,71,87,0.08); }
+    .filter-btn.high.active     { border-color: var(--orange); color: var(--orange); background: rgba(255,140,0,0.08); }
+    .filter-btn.warning.active  { border-color: var(--yellow); color: var(--yellow); background: rgba(255,215,0,0.08); }
+
+    .spacer { flex: 1; }
+
+    .simulate-btn {
+      padding: 8px 18px;
+      background: linear-gradient(135deg, var(--red), #cc0000);
+      border: none; border-radius: 6px;
+      color: #fff; font-family: var(--font-mono);
+      font-size: 11px; cursor: pointer;
+      transition: all 0.2s ease; letter-spacing: 1px;
+    }
+    .simulate-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(255,71,87,0.3); }
+
+    /* ── Alerts table ── */
+    .alerts-table-wrap {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .alerts-table {
+      width: 100%; border-collapse: collapse;
+    }
+    .alerts-table th {
+      background: var(--bg2);
+      font-family: var(--font-mono);
+      font-size: 10px; color: var(--accent);
+      letter-spacing: 2px; padding: 14px 16px;
+      text-align: left; border-bottom: 1px solid var(--border);
+    }
+    .alerts-table td {
+      padding: 12px 16px;
+      font-size: 13px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    .alerts-table tr:last-child td { border-bottom: none; }
+    .alerts-table tr:hover td { background: rgba(0,212,255,0.02); }
+
+    /* ── Severity badge ── */
+    .sev-badge {
+      padding: 3px 8px; border-radius: 4px;
+      font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+      letter-spacing: 1px; white-space: nowrap;
+    }
+    .sev-critical { background: rgba(255,71,87,0.2);  color: var(--red);    }
+    .sev-high     { background: rgba(255,140,0,0.2);  color: var(--orange); }
+    .sev-warning  { background: rgba(255,215,0,0.2);  color: var(--yellow); }
+    .sev-info     { background: rgba(0,212,255,0.2);  color: var(--accent); }
+
+    /* ── Status badge ── */
+    .status-badge {
+      padding: 3px 8px; border-radius: 4px;
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: 1px;
+    }
+    .status-active     { background: rgba(255,71,87,0.15);  color: var(--red);    }
+    .status-acknowledged { background: rgba(255,215,0,0.15); color: var(--yellow); }
+    .status-resolved   { background: rgba(0,255,136,0.15);  color: var(--green);  }
+
+    /* ── Action buttons ── */
+    .action-btns { display: flex; gap: 6px; }
+    .action-btn {
+      padding: 4px 10px;
+      border-radius: 4px; border: 1px solid var(--border);
+      background: transparent; color: var(--muted);
+      font-family: var(--font-mono); font-size: 10px;
+      cursor: pointer; transition: all 0.2s ease; letter-spacing: 1px;
+    }
+    .action-btn.ack:hover  { border-color: var(--yellow); color: var(--yellow); }
+    .action-btn.res:hover  { border-color: var(--green);  color: var(--green);  }
+
+    /* ── Empty state ── */
+    .empty-state {
+      text-align: center; padding: 48px;
+      font-family: var(--font-mono); font-size: 13px; color: var(--green);
+    }
+
+    /* ── Toast notification ── */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: var(--card); border: 1px solid var(--accent);
+      border-radius: 10px; padding: 14px 20px;
+      font-family: var(--font-mono); font-size: 12px; color: var(--accent);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      transform: translateY(100px); opacity: 0;
+      transition: all 0.3s ease; z-index: 999;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+  </style>
+</head>
+<body>
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-title">Infra<span>Guard</span> AI</div>
+      <div class="sidebar-logo-sub">MONITORING PLATFORM</div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/overview" class="nav-item"><span class="nav-icon">📊</span> Overview</a>
+      <a href="/twin"     class="nav-item"><span class="nav-icon">🌐</span> Digital Twin</a>
+      <a href="/servers"  class="nav-item"><span class="nav-icon">🖥️</span> Servers</a>
+      <a href="/ai"       class="nav-item"><span class="nav-icon">🤖</span> AI Models</a>
+      <a href="/alerts"   class="nav-item active"><span class="nav-icon">🔔</span> Alerts</a>
+      <a href="/reports"  class="nav-item"><span class="nav-icon">📄</span> Reports</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar" id="userAvatar">A</div>
+        <div>
+          <div class="user-name" id="userName">Admin</div>
+          <div class="user-role" id="userRole">ADMIN</div>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="logout()">LOGOUT</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="page-title">Alert <span>Center</span></div>
+    </div>
+
+    <!-- Summary cards -->
+    <div class="summary-grid">
+      <div class="summary-card total">
+        <div class="summary-label">TOTAL ACTIVE</div>
+        <div class="summary-value" id="sumTotal">0</div>
+      </div>
+      <div class="summary-card critical">
+        <div class="summary-label">CRITICAL</div>
+        <div class="summary-value" id="sumCritical">0</div>
+      </div>
+      <div class="summary-card high">
+        <div class="summary-label">HIGH</div>
+        <div class="summary-value" id="sumHigh">0</div>
+      </div>
+      <div class="summary-card warning">
+        <div class="summary-label">WARNING</div>
+        <div class="summary-value" id="sumWarning">0</div>
+      </div>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <button class="filter-btn active"    onclick="setFilter('all')"      id="fAll">ALL</button>
+      <button class="filter-btn"           onclick="setFilter('active')"   id="fActive">ACTIVE</button>
+      <button class="filter-btn critical"  onclick="setFilter('critical')" id="fCritical">CRITICAL</button>
+      <button class="filter-btn high"      onclick="setFilter('high')"     id="fHigh">HIGH</button>
+      <button class="filter-btn warning"   onclick="setFilter('warning')"  id="fWarning">WARNING</button>
+      <button class="filter-btn"           onclick="setFilter('resolved')" id="fResolved">RESOLVED</button>
+      <div class="spacer"></div>
+      <button class="simulate-btn" onclick="simulateFailure()">
+        💥 SIMULATE FAILURE
+      </button>
+    </div>
+
+    <!-- Alerts table -->
+    <div class="alerts-table-wrap">
+      <table class="alerts-table">
+        <thead>
+          <tr>
+            <th>TIME</th>
+            <th>SEVERITY</th>
+            <th>SERVER</th>
+            <th>METRIC</th>
+            <th>MESSAGE</th>
+            <th>VALUE</th>
+            <th>STATUS</th>
+            <th>ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody id="alertsBody">
+          <tr><td colspan="8" class="empty-state">Loading alerts...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    let allAlerts  = [];
+    let currentFilter = 'all';
+
+    function setFilter(f) {
+      currentFilter = f;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      const map = { all:'fAll', active:'fActive', critical:'fCritical', high:'fHigh', warning:'fWarning', resolved:'fResolved' };
+      const btn = document.getElementById(map[f]);
+      if (btn) btn.classList.add('active');
+      renderAlerts();
+    }
+
+    function filterAlerts() {
+      switch(currentFilter) {
+        case 'active':   return allAlerts.filter(a => a.status === 'active');
+        case 'critical': return allAlerts.filter(a => a.severity === 'CRITICAL');
+        case 'high':     return allAlerts.filter(a => a.severity === 'HIGH');
+        case 'warning':  return allAlerts.filter(a => a.severity === 'WARNING');
+        case 'resolved': return allAlerts.filter(a => a.status === 'resolved');
+        default:         return allAlerts;
+      }
+    }
+
+    function renderAlerts() {
+      const tbody  = document.getElementById('alertsBody');
+      const alerts = filterAlerts();
+
+      if (!alerts.length) {
+        tbody.innerHTML = `<tr><td colspan="8" class="empty-state">✅ No alerts match this filter</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = alerts.map(a => {
+        const time    = a.created_at ? a.created_at.substring(11,16) : '--:--';
+        const sevClass= 'sev-'    + a.severity.toLowerCase();
+        const staClass= 'status-' + a.status.toLowerCase();
+        const isActive= a.status === 'active';
+        const isAck   = a.status === 'acknowledged';
+
+        const actions = isActive ? `
+          <div class="action-btns">
+            <button class="action-btn ack" onclick="ackAlert(${a.id})">ACK</button>
+            <button class="action-btn res" onclick="resAlert(${a.id})">RESOLVE</button>
+          </div>` : isAck ? `
+          <div class="action-btns">
+            <button class="action-btn res" onclick="resAlert(${a.id})">RESOLVE</button>
+          </div>` : `<span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">—</span>`;
+
+        return `<tr>
+          <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">${time}</td>
+          <td><span class="sev-badge ${sevClass}">${a.severity}</span></td>
+          <td style="font-weight:600">${a.server_name || a.server_id}</td>
+          <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">${a.metric}</td>
+          <td style="font-size:12px;max-width:280px">${a.message}</td>
+          <td style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">${(a.value||0).toFixed(1)}</td>
+          <td><span class="status-badge ${staClass}">${a.status.toUpperCase()}</span></td>
+          <td>${actions}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    function updateSummary(summary) {
+      document.getElementById('sumTotal').textContent    = summary.total    || 0;
+      document.getElementById('sumCritical').textContent = summary.CRITICAL || 0;
+      document.getElementById('sumHigh').textContent     = summary.HIGH     || 0;
+      document.getElementById('sumWarning').textContent  = summary.WARNING  || 0;
+    }
+
+    async function fetchAlerts() {
+      try {
+        const res  = await fetch('/api/alerts');
+        if (res.status === 401) { window.location.href='/login'; return; }
+        const data = await res.json();
+        allAlerts  = data.alerts || [];
+        updateSummary(data.summary || {});
+        renderAlerts();
+      } catch(e) { console.error(e); }
+    }
+
+    async function ackAlert(id) {
+      try {
+        await fetch(`/api/alerts/${id}/acknowledge`, { method:'POST' });
+        showToast('Alert acknowledged ✓');
+        fetchAlerts();
+      } catch(e) {}
+    }
+
+    async function resAlert(id) {
+      try {
+        await fetch(`/api/alerts/${id}/resolve`, { method:'POST' });
+        showToast('Alert resolved ✓');
+        fetchAlerts();
+      } catch(e) {}
+    }
+
+    async function simulateFailure() {
+      const servers = ['web_server_1','app_server','db_mysql','db_redis'];
+      const sid     = servers[Math.floor(Math.random() * servers.length)];
+      try {
+        const res  = await fetch('/api/simulate/failure', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ server_id: sid })
+        });
+        const data = await res.json();
+        showToast(`💥 Failure injected into ${sid}`);
+        setTimeout(fetchAlerts, 1500);
+      } catch(e) {}
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    async function loadUser() {
+      try {
+        const res  = await fetch('/api/me');
+        const data = await res.json();
+        if (data.logged_in) {
+          document.getElementById('userName').textContent   = data.username;
+          document.getElementById('userRole').textContent  = data.role.toUpperCase();
+          document.getElementById('userAvatar').textContent= data.username[0].toUpperCase();
+        }
+      } catch(e) {}
+    }
+
+    async function logout() {
+      await fetch('/api/logout', { method: 'POST' });
+      window.location.href = '/login';
+    }
+
+    loadUser();
+    fetchAlerts();
+    setInterval(fetchAlerts, 3000);
+  </script>
+
+</body>
+</html>

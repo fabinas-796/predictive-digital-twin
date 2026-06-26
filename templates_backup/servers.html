@@ -1,0 +1,800 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>InfraGuard AI — Servers</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <style>
+      :root {
+        --bg: #020818;
+        --bg2: #0a1628;
+        --card: #0d1f3c;
+        --border: #1a3a5c;
+        --accent: #00d4ff;
+        --accent2: #0088cc;
+        --green: #00ff88;
+        --yellow: #ffd700;
+        --orange: #ff8c00;
+        --red: #ff4757;
+        --text: #e0e8f0;
+        --muted: #4a6080;
+        --font-mono: "Share Tech Mono", monospace;
+        --font-main: "Rajdhani", sans-serif;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font-main);
+        min-height: 100vh;
+        display: flex;
+      }
+
+      /* ── Sidebar ── */
+      .sidebar {
+        width: 220px;
+        min-height: 100vh;
+        background: var(--bg2);
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 100;
+      }
+      .sidebar-logo {
+        padding: 24px 20px;
+        border-bottom: 1px solid var(--border);
+      }
+      .sidebar-logo-title {
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: 1px;
+      }
+      .sidebar-logo-title span {
+        color: var(--accent);
+      }
+      .sidebar-logo-sub {
+        font-family: var(--font-mono);
+        font-size: 9px;
+        color: var(--muted);
+        letter-spacing: 2px;
+        margin-top: 4px;
+      }
+      .sidebar-nav {
+        flex: 1;
+        padding: 16px 0;
+      }
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 20px;
+        color: var(--muted);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        letter-spacing: 1px;
+        transition: all 0.2s ease;
+        border-left: 3px solid transparent;
+      }
+      .nav-item:hover {
+        color: var(--text);
+        background: rgba(0, 212, 255, 0.05);
+      }
+      .nav-item.active {
+        color: var(--accent);
+        border-left-color: var(--accent);
+        background: rgba(0, 212, 255, 0.08);
+      }
+      .nav-icon {
+        font-size: 16px;
+        width: 20px;
+        text-align: center;
+      }
+      .sidebar-footer {
+        padding: 16px 20px;
+        border-top: 1px solid var(--border);
+      }
+      .user-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+      .user-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: 700;
+        color: #000;
+      }
+      .user-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text);
+      }
+      .user-role {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--muted);
+      }
+      .btn-logout {
+        width: 100%;
+        padding: 8px;
+        background: transparent;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        color: var(--muted);
+        font-family: var(--font-mono);
+        font-size: 11px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        letter-spacing: 1px;
+      }
+      .btn-logout:hover {
+        border-color: var(--red);
+        color: var(--red);
+      }
+
+      /* ── Main ── */
+      .main {
+        margin-left: 220px;
+        flex: 1;
+        padding: 24px;
+      }
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+      }
+      .page-title {
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: 2px;
+      }
+      .page-title span {
+        color: var(--accent);
+      }
+
+      /* ── Server selector ── */
+      .server-tabs {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 24px;
+      }
+      .server-tab {
+        padding: 8px 16px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--muted);
+        font-family: var(--font-mono);
+        font-size: 11px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        letter-spacing: 1px;
+      }
+      .server-tab:hover {
+        border-color: var(--accent);
+        color: var(--text);
+      }
+      .server-tab.active {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: rgba(0, 212, 255, 0.08);
+      }
+      .server-tab.risk-critical {
+        border-color: var(--red);
+        color: var(--red);
+      }
+      .server-tab.risk-high {
+        border-color: var(--orange);
+        color: var(--orange);
+      }
+      .server-tab.risk-warning {
+        border-color: var(--yellow);
+        color: var(--yellow);
+      }
+
+      /* ── Metric cards ── */
+      .metrics-row {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+      .metric-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 16px 12px;
+        text-align: center;
+      }
+      .metric-card-label {
+        font-family: var(--font-mono);
+        font-size: 9px;
+        color: var(--muted);
+        letter-spacing: 2px;
+        margin-bottom: 8px;
+      }
+      .metric-card-value {
+        font-family: var(--font-mono);
+        font-size: 22px;
+        font-weight: 700;
+      }
+      .metric-card-bar {
+        height: 3px;
+        background: var(--border);
+        border-radius: 2px;
+        margin-top: 8px;
+        overflow: hidden;
+      }
+      .metric-card-bar-fill {
+        height: 100%;
+        border-radius: 2px;
+        transition: width 0.5s ease;
+      }
+
+      /* ── Charts ── */
+      .charts-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .chart-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+      }
+      .chart-title {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--accent);
+        letter-spacing: 2px;
+        margin-bottom: 16px;
+      }
+      .chart-wrap {
+        position: relative;
+        height: 180px;
+      }
+
+      /* ── Prediction panel ── */
+      .bottom-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      .panel {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+      }
+      .panel-title {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--accent);
+        letter-spacing: 2px;
+        margin-bottom: 16px;
+      }
+      .pred-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--border);
+        font-size: 13px;
+      }
+      .pred-row:last-child {
+        border-bottom: none;
+      }
+      .pred-label {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--muted);
+      }
+      .pred-value {
+        font-family: var(--font-mono);
+        font-weight: 700;
+      }
+
+      /* ── Feature importance ── */
+      .fi-row {
+        padding: 8px 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .fi-row:last-child {
+        border-bottom: none;
+      }
+      .fi-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 4px;
+        font-size: 12px;
+      }
+      .fi-bar-bg {
+        height: 4px;
+        background: var(--border);
+        border-radius: 2px;
+        overflow: hidden;
+      }
+      .fi-bar-fill {
+        height: 100%;
+        background: var(--accent);
+        border-radius: 2px;
+        transition: width 0.5s;
+      }
+    </style>
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-title">Infra<span>Guard</span> AI</div>
+        <div class="sidebar-logo-sub">MONITORING PLATFORM</div>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="/overview" class="nav-item"
+          ><span class="nav-icon">📊</span> Overview</a
+        >
+        <a href="/twin" class="nav-item"
+          ><span class="nav-icon">🌐</span> Digital Twin</a
+        >
+        <a href="/servers" class="nav-item active"
+          ><span class="nav-icon">🖥️</span> Servers</a
+        >
+        <a href="/ai" class="nav-item"
+          ><span class="nav-icon">🤖</span> AI Models</a
+        >
+        <a href="/alerts" class="nav-item"
+          ><span class="nav-icon">🔔</span> Alerts</a
+        >
+        <a href="/reports" class="nav-item"
+          ><span class="nav-icon">📄</span> Reports</a
+        >
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="user-avatar" id="userAvatar">A</div>
+          <div>
+            <div class="user-name" id="userName">Admin</div>
+            <div class="user-role" id="userRole">ADMIN</div>
+          </div>
+        </div>
+        <button class="btn-logout" onclick="logout()">LOGOUT</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="page-title">Server <span>Drilldown</span></div>
+      </div>
+
+      <!-- Server tabs -->
+      <div class="server-tabs" id="serverTabs"></div>
+
+      <!-- Live metrics row -->
+      <div class="metrics-row">
+        <div class="metric-card">
+          <div class="metric-card-label">CPU</div>
+          <div class="metric-card-value" id="mCpu" style="color: var(--green)">
+            --%
+          </div>
+          <div class="metric-card-bar">
+            <div
+              class="metric-card-bar-fill"
+              id="mCpuBar"
+              style="background: var(--green)"
+            ></div>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-card-label">RAM</div>
+          <div class="metric-card-value" id="mRam" style="color: var(--accent)">
+            --%
+          </div>
+          <div class="metric-card-bar">
+            <div
+              class="metric-card-bar-fill"
+              id="mRamBar"
+              style="background: var(--accent)"
+            ></div>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-card-label">DISK</div>
+          <div
+            class="metric-card-value"
+            id="mDisk"
+            style="color: var(--accent)"
+          >
+            --%
+          </div>
+          <div class="metric-card-bar">
+            <div
+              class="metric-card-bar-fill"
+              id="mDiskBar"
+              style="background: var(--accent)"
+            ></div>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-card-label">TEMP</div>
+          <div
+            class="metric-card-value"
+            id="mTemp"
+            style="color: var(--yellow)"
+          >
+            --°C
+          </div>
+          <div class="metric-card-bar">
+            <div
+              class="metric-card-bar-fill"
+              id="mTempBar"
+              style="background: var(--yellow)"
+            ></div>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-card-label">RESP TIME</div>
+          <div class="metric-card-value" id="mRt" style="color: var(--text)">
+            --ms
+          </div>
+          <div class="metric-card-bar">
+            <div
+              class="metric-card-bar-fill"
+              id="mRtBar"
+              style="background: var(--accent)"
+            ></div>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-card-label">ERROR RATE</div>
+          <div class="metric-card-value" id="mErr" style="color: var(--text)">
+            --%
+          </div>
+          <div class="metric-card-bar">
+            <div
+              class="metric-card-bar-fill"
+              id="mErrBar"
+              style="background: var(--green)"
+            ></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="charts-grid">
+        <div class="chart-card">
+          <div class="chart-title">CPU HISTORY</div>
+          <div class="chart-wrap"><canvas id="cpuChart"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">RAM HISTORY</div>
+          <div class="chart-wrap"><canvas id="ramChart"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">RESPONSE TIME (ms)</div>
+          <div class="chart-wrap"><canvas id="rtChart"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">ERROR RATE (%)</div>
+          <div class="chart-wrap"><canvas id="errChart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Bottom panels -->
+      <div class="bottom-grid">
+        <div class="panel">
+          <div class="panel-title">AI PREDICTION</div>
+          <div class="pred-row">
+            <span class="pred-label">RISK LEVEL</span>
+            <span class="pred-value" id="predRisk">—</span>
+          </div>
+          <div class="pred-row">
+            <span class="pred-label">FAILURE PROBABILITY</span>
+            <span class="pred-value" id="predProb">—</span>
+          </div>
+          <div class="pred-row">
+            <span class="pred-label">TIME TO FAILURE</span>
+            <span class="pred-value" id="predTtf" style="color: var(--green)"
+              >—</span
+            >
+          </div>
+          <div class="pred-row">
+            <span class="pred-label">ANOMALY SCORE</span>
+            <span class="pred-value" id="predAnomaly">—</span>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">FEATURE IMPORTANCE (WHY IT MIGHT FAIL)</div>
+          <div id="featureImportance">
+            <div
+              style="
+                font-family: var(--font-mono);
+                font-size: 11px;
+                color: var(--muted);
+                text-align: center;
+                padding: 20px;
+              "
+            >
+              Loading AI analysis...
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      let selectedServer = "pc_local";
+      let charts = {};
+      let allServers = [];
+
+      const CHART_OPTIONS = (label) => ({
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: {
+            ticks: {
+              color: "#4a6080",
+              font: { family: "Share Tech Mono", size: 8 },
+              maxTicksLimit: 6,
+            },
+            grid: { color: "#1a3a5c" },
+          },
+          y: {
+            ticks: {
+              color: "#4a6080",
+              font: { family: "Share Tech Mono", size: 8 },
+            },
+            grid: { color: "#1a3a5c" },
+          },
+        },
+      });
+
+      function metricColor(val, warn = 70, crit = 90) {
+        if (val >= crit) return "#ff4757";
+        if (val >= warn) return "#ffd700";
+        return "#00ff88";
+      }
+
+      function initCharts() {
+        const makeChart = (id, color) => {
+          const ctx = document.getElementById(id).getContext("2d");
+          return new Chart(ctx, {
+            type: "line",
+            data: {
+              labels: [],
+              datasets: [
+                {
+                  data: [],
+                  borderColor: color,
+                  backgroundColor: color + "18",
+                  borderWidth: 1.5,
+                  fill: true,
+                  tension: 0.4,
+                  pointRadius: 0,
+                },
+              ],
+            },
+            options: CHART_OPTIONS(id),
+          });
+        };
+
+        charts.cpu = makeChart("cpuChart", "#00d4ff");
+        charts.ram = makeChart("ramChart", "#00ff88");
+        charts.rt = makeChart("rtChart", "#ffd700");
+        charts.err = makeChart("errChart", "#ff4757");
+      }
+
+      function updateCharts(history) {
+        const labels = history.map((h) =>
+          h.timestamp ? h.timestamp.substring(11, 16) : "",
+        );
+        const update = (chart, key) => {
+          chart.data.labels = labels;
+          chart.data.datasets[0].data = history.map((h) => h[key] || 0);
+          chart.update("none");
+        };
+        update(charts.cpu, "cpu");
+        update(charts.ram, "ram");
+        update(charts.rt, "response_time");
+        update(charts.err, "error_rate");
+      }
+
+      function updateMetricCards(latest) {
+        const set = (id, barId, val, max, warn, crit, suffix) => {
+          const el = document.getElementById(id);
+          const bar = document.getElementById(barId);
+          const col = metricColor(val, warn, crit);
+          el.textContent = val.toFixed(1) + suffix;
+          el.style.color = col;
+          bar.style.width = Math.min(100, (val / max) * 100) + "%";
+          bar.style.background = col;
+        };
+        set("mCpu", "mCpuBar", latest.cpu || 0, 100, 70, 90, "%");
+        set("mRam", "mRamBar", latest.ram || 0, 100, 70, 90, "%");
+        set("mDisk", "mDiskBar", latest.disk || 0, 100, 75, 92, "%");
+        set("mTemp", "mTempBar", latest.temperature || 0, 100, 65, 80, "°C");
+
+        const rt = latest.response_time || 0;
+        const err = latest.error_rate || 0;
+        document.getElementById("mRt").textContent = rt.toFixed(0) + "ms";
+        document.getElementById("mErr").textContent = err.toFixed(2) + "%";
+        document.getElementById("mRtBar").style.width =
+          Math.min(100, rt / 30) + "%";
+        document.getElementById("mErrBar").style.width =
+          Math.min(100, err * 10) + "%";
+      }
+
+      function updatePrediction(pred) {
+        if (!pred) return;
+        const risk = pred.risk_level || "LOW";
+        const colors = {
+          CRITICAL: "#ff4757",
+          HIGH: "#ff8c00",
+          MEDIUM: "#00d4ff",
+          LOW: "#00ff88",
+        };
+        const col = colors[risk] || "#00ff88";
+
+        document.getElementById("predRisk").textContent = risk;
+        document.getElementById("predRisk").style.color = col;
+        document.getElementById("predProb").textContent =
+          (pred.failure_probability || 0).toFixed(1) + "%";
+        document.getElementById("predTtf").textContent =
+          pred.time_to_failure || "No failure predicted";
+
+        // Anomaly score from model_details
+        let anomaly = 0;
+        if (pred.model_details) {
+          try {
+            const md =
+              typeof pred.model_details === "string"
+                ? JSON.parse(pred.model_details)
+                : pred.model_details;
+            anomaly = md.combined_score || 0;
+          } catch (e) {}
+        }
+        document.getElementById("predAnomaly").textContent =
+          anomaly.toFixed(1) + "%";
+
+        // Feature importance
+        const fi = document.getElementById("featureImportance");
+        if (pred.model_details) {
+          try {
+            const md =
+              typeof pred.model_details === "string"
+                ? JSON.parse(pred.model_details)
+                : pred.model_details;
+            const scores = md.model_scores || {};
+            fi.innerHTML = Object.entries(scores)
+              .map(
+                ([k, v]) => `
+            <div class="fi-row">
+              <div class="fi-header">
+                <span style="font-family:var(--font-mono); font-size:10px; color:var(--muted)">${k.replace("_", " ").toUpperCase()}</span>
+                <span style="font-family:var(--font-mono); font-size:10px; color:var(--accent)">${v.toFixed(1)}%</span>
+              </div>
+              <div class="fi-bar-bg">
+                <div class="fi-bar-fill" style="width:${v}%"></div>
+              </div>
+            </div>`,
+              )
+              .join("");
+          } catch (e) {
+            fi.innerHTML =
+              '<div style="font-family:var(--font-mono); font-size:11px; color:var(--muted); padding:8px;">No AI data yet</div>';
+          }
+        }
+      }
+
+      async function fetchServerData() {
+        try {
+          const res = await fetch(`/api/metrics/${selectedServer}?limit=50`);
+          if (res.status === 401) {
+            window.location.href = "/login";
+            return;
+          }
+          const data = await res.json();
+          if (data.history) updateCharts(data.history);
+          if (data.latest) updateMetricCards(data.latest);
+        } catch (e) {}
+
+        try {
+          const res = await fetch(`/api/predictions/${selectedServer}`);
+          const pred = await res.json();
+          updatePrediction(pred);
+        } catch (e) {}
+      }
+
+      async function loadServers() {
+        try {
+          const res = await fetch("/api/overview");
+          const data = await res.json();
+          allServers = data.servers || [];
+          renderTabs();
+        } catch (e) {}
+      }
+
+      function renderTabs() {
+        const tabs = document.getElementById("serverTabs");
+        tabs.innerHTML = allServers
+          .map((s) => {
+            const risk = s.risk || "OK";
+            const rClass =
+              risk === "CRITICAL"
+                ? "risk-critical"
+                : risk === "HIGH"
+                  ? "risk-high"
+                  : risk === "WARNING"
+                    ? "risk-warning"
+                    : "";
+            const active = s.id === selectedServer ? "active" : "";
+            return `<div class="server-tab ${active} ${rClass}"
+                     onclick="selectServer('${s.id}')">${s.name}</div>`;
+          })
+          .join("");
+      }
+
+      function selectServer(id) {
+        selectedServer = id;
+        renderTabs();
+        fetchServerData();
+      }
+
+      // Check URL param
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get("id")) selectedServer = urlParams.get("id");
+
+      async function loadUser() {
+        try {
+          const res = await fetch("/api/me");
+          const data = await res.json();
+          if (data.logged_in) {
+            document.getElementById("userName").textContent = data.username;
+            document.getElementById("userRole").textContent =
+              data.role.toUpperCase();
+            document.getElementById("userAvatar").textContent =
+              data.username[0].toUpperCase();
+          }
+        } catch (e) {}
+      }
+
+      async function logout() {
+        await fetch("/api/logout", { method: "POST" });
+        window.location.href = "/login";
+      }
+
+      initCharts();
+      loadUser();
+      loadServers();
+      fetchServerData();
+      setInterval(() => {
+        fetchServerData();
+        loadServers();
+      }, 3000);
+    </script>
+  </body>
+</html>

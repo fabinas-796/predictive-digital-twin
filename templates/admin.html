@@ -1,0 +1,1204 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>InfraGuard AI — Admin Panel</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #020818;
+        --bg2: #0a1628;
+        --card: #0d1f3c;
+        --border: #1a3a5c;
+        --accent: #00d4ff;
+        --accent2: #0088cc;
+        --green: #00ff88;
+        --yellow: #ffd700;
+        --orange: #ff8c00;
+        --red: #ff4757;
+        --text: #e0e8f0;
+        --muted: #4a6080;
+        --font-mono: "Share Tech Mono", monospace;
+        --font-main: "Rajdhani", sans-serif;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font-main);
+        min-height: 100vh;
+        display: flex;
+      }
+      .sidebar {
+        width: 220px;
+        min-height: 100vh;
+        background: var(--bg2);
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 100;
+      }
+      .sidebar-logo {
+        padding: 24px 20px;
+        border-bottom: 1px solid var(--border);
+      }
+      .sidebar-logo-title {
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: 1px;
+      }
+      .sidebar-logo-title span {
+        color: var(--accent);
+      }
+      .sidebar-logo-sub {
+        font-family: var(--font-mono);
+        font-size: 9px;
+        color: var(--muted);
+        letter-spacing: 2px;
+        margin-top: 4px;
+      }
+      .sidebar-nav {
+        flex: 1;
+        padding: 16px 0;
+      }
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 20px;
+        color: var(--muted);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        letter-spacing: 1px;
+        transition: all 0.2s ease;
+        border-left: 3px solid transparent;
+      }
+      .nav-item:hover {
+        color: var(--text);
+        background: rgba(0, 212, 255, 0.05);
+      }
+      .nav-item.active {
+        color: var(--accent);
+        border-left-color: var(--accent);
+        background: rgba(0, 212, 255, 0.08);
+      }
+      .nav-icon {
+        font-size: 16px;
+        width: 20px;
+        text-align: center;
+      }
+      .sidebar-footer {
+        padding: 16px 20px;
+        border-top: 1px solid var(--border);
+      }
+      .user-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+      .user-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: 700;
+        color: #000;
+      }
+      .user-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text);
+      }
+      .user-role {
+        font-family: var(--font-mono);
+        font-size: 10px;
+      }
+      .btn-logout {
+        width: 100%;
+        padding: 8px;
+        background: transparent;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        color: var(--muted);
+        font-family: var(--font-mono);
+        font-size: 11px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        letter-spacing: 1px;
+      }
+      .btn-logout:hover {
+        border-color: var(--red);
+        color: var(--red);
+      }
+      .main {
+        margin-left: 220px;
+        flex: 1;
+        padding: 24px;
+      }
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+      }
+      .page-title {
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: 2px;
+      }
+      .page-title span {
+        color: var(--red);
+      }
+      .admin-badge {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 71, 87, 0.1);
+        border: 1px solid rgba(255, 71, 87, 0.3);
+        border-radius: 20px;
+        padding: 6px 14px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--red);
+      }
+      .admin-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--red);
+        animation: blink 1.5s infinite;
+      }
+      @keyframes blink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.3;
+        }
+      }
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .stat-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        position: relative;
+        overflow: hidden;
+      }
+      .stat-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+      }
+      .stat-card.red::before {
+        background: var(--red);
+      }
+      .stat-card.cyan::before {
+        background: var(--accent);
+      }
+      .stat-card.green::before {
+        background: var(--green);
+      }
+      .stat-card.yellow::before {
+        background: var(--yellow);
+      }
+      .stat-label {
+        font-family: var(--font-mono);
+        font-size: 9px;
+        color: var(--muted);
+        letter-spacing: 2px;
+        margin-bottom: 8px;
+      }
+      .stat-value {
+        font-family: var(--font-mono);
+        font-size: 32px;
+        font-weight: 700;
+      }
+      .stat-card.red .stat-value {
+        color: var(--red);
+      }
+      .stat-card.cyan .stat-value {
+        color: var(--accent);
+      }
+      .stat-card.green .stat-value {
+        color: var(--green);
+      }
+      .stat-card.yellow .stat-value {
+        color: var(--yellow);
+      }
+      .stat-sub {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 4px;
+      }
+      .section-title {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--accent);
+        letter-spacing: 3px;
+        margin-bottom: 16px;
+      }
+      .server-mgmt-grid {
+        display: grid;
+        grid-template-columns: 1fr 1.6fr;
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .panel {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+      }
+      .panel-title {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--accent);
+        letter-spacing: 2px;
+        margin-bottom: 16px;
+      }
+      .form-group {
+        margin-bottom: 14px;
+      }
+      .form-label {
+        display: block;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--accent);
+        letter-spacing: 2px;
+        margin-bottom: 6px;
+      }
+      .form-input {
+        width: 100%;
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 10px 14px;
+        color: var(--text);
+        font-family: var(--font-mono);
+        font-size: 13px;
+        outline: none;
+        transition: all 0.3s ease;
+      }
+      .form-input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.1);
+      }
+      .form-select {
+        width: 100%;
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 10px 14px;
+        color: var(--text);
+        font-family: var(--font-mono);
+        font-size: 13px;
+        outline: none;
+        cursor: pointer;
+      }
+      .form-select:focus {
+        border-color: var(--accent);
+      }
+      .form-hint {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--muted);
+        margin-top: 4px;
+      }
+      .btn-add {
+        width: 100%;
+        padding: 12px;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        border: none;
+        border-radius: 8px;
+        color: #000;
+        font-family: var(--font-main);
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 4px;
+      }
+      .btn-add:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 212, 255, 0.3);
+      }
+      .btn-add:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+      }
+      .server-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .server-table th {
+        background: var(--bg2);
+        font-family: var(--font-mono);
+        font-size: 9px;
+        color: var(--accent);
+        letter-spacing: 2px;
+        padding: 10px 12px;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+      }
+      .server-table td {
+        padding: 10px 12px;
+        font-size: 13px;
+        border-bottom: 1px solid var(--border);
+        vertical-align: middle;
+      }
+      .server-table tr:last-child td {
+        border-bottom: none;
+      }
+      .server-table tr:hover td {
+        background: rgba(0, 212, 255, 0.02);
+      }
+      .type-badge {
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-family: var(--font-mono);
+        font-size: 9px;
+        background: rgba(0, 212, 255, 0.1);
+        color: var(--accent);
+        letter-spacing: 1px;
+      }
+      .original-badge {
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-family: var(--font-mono);
+        font-size: 9px;
+        background: rgba(0, 255, 136, 0.1);
+        color: var(--green);
+        letter-spacing: 1px;
+      }
+      .custom-badge {
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-family: var(--font-mono);
+        font-size: 9px;
+        background: rgba(255, 215, 0, 0.1);
+        color: var(--yellow);
+        letter-spacing: 1px;
+      }
+      .btn-delete {
+        padding: 4px 12px;
+        border-radius: 4px;
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--muted);
+        font-family: var(--font-mono);
+        font-size: 10px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .btn-delete:hover {
+        border-color: var(--red);
+        color: var(--red);
+        background: rgba(255, 71, 87, 0.08);
+      }
+      .btn-delete:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+      }
+      .users-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .user-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 24px;
+        transition: all 0.3s ease;
+      }
+      .user-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      }
+      .user-card.admin-card {
+        border-color: rgba(255, 71, 87, 0.3);
+      }
+      .user-card.engineer-card {
+        border-color: rgba(255, 215, 0, 0.3);
+      }
+      .user-card.viewer-card {
+        border-color: rgba(0, 255, 136, 0.3);
+      }
+      .user-card-header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 20px;
+      }
+      .user-card-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        font-weight: 700;
+        color: #000;
+      }
+      .admin-card .user-card-avatar {
+        background: linear-gradient(135deg, #ff4757, #cc0000);
+      }
+      .engineer-card .user-card-avatar {
+        background: linear-gradient(135deg, #ffd700, #cc9900);
+      }
+      .viewer-card .user-card-avatar {
+        background: linear-gradient(135deg, #00ff88, #00cc66);
+      }
+      .user-card-name {
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: 1px;
+      }
+      .user-card-role {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 2px;
+        margin-top: 2px;
+      }
+      .admin-card .user-card-role {
+        color: var(--red);
+      }
+      .engineer-card .user-card-role {
+        color: var(--yellow);
+      }
+      .viewer-card .user-card-role {
+        color: var(--green);
+      }
+      .user-card-detail {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--border);
+        font-size: 12px;
+      }
+      .user-card-detail:last-child {
+        border-bottom: none;
+      }
+      .detail-key {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--muted);
+      }
+      .detail-val {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--text);
+      }
+      .matrix-wrap {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 24px;
+      }
+      .matrix-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .matrix-table th {
+        background: var(--bg2);
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--accent);
+        letter-spacing: 2px;
+        padding: 14px 16px;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+      }
+      .matrix-table td {
+        padding: 12px 16px;
+        font-size: 13px;
+        border-bottom: 1px solid var(--border);
+      }
+      .matrix-table tr:last-child td {
+        border-bottom: none;
+      }
+      .matrix-table tr:hover td {
+        background: rgba(0, 212, 255, 0.02);
+      }
+      .perm-yes {
+        color: var(--green);
+        font-family: var(--font-mono);
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .perm-no {
+        color: var(--muted);
+        font-family: var(--font-mono);
+        font-size: 13px;
+      }
+      .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      .info-panel {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+      }
+      .info-panel-title {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--accent);
+        letter-spacing: 2px;
+        margin-bottom: 16px;
+      }
+      .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--border);
+        font-size: 13px;
+      }
+      .info-row:last-child {
+        border-bottom: none;
+      }
+      .info-key {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--muted);
+      }
+      .info-val {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--text);
+        font-weight: 700;
+      }
+      .info-val.green {
+        color: var(--green);
+      }
+      .info-val.yellow {
+        color: var(--yellow);
+      }
+      .info-val.red {
+        color: var(--red);
+      }
+      .toast {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        background: var(--card);
+        border: 1px solid var(--green);
+        border-radius: 10px;
+        padding: 14px 20px;
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--green);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        transform: translateY(100px);
+        opacity: 0;
+        transition: all 0.3s ease;
+        z-index: 999;
+      }
+      .toast.show {
+        transform: translateY(0);
+        opacity: 1;
+      }
+      .toast.error {
+        border-color: var(--red);
+        color: var(--red);
+      }
+    </style>
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-title">Infra<span>Guard</span> AI</div>
+        <div class="sidebar-logo-sub">MONITORING PLATFORM</div>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="/overview" class="nav-item"
+          ><span class="nav-icon">📊</span> Overview</a
+        >
+        <a href="/twin" class="nav-item"
+          ><span class="nav-icon">🌐</span> Digital Twin</a
+        >
+        <a href="/servers" class="nav-item"
+          ><span class="nav-icon">🖥️</span> Servers</a
+        >
+        <a href="/ai" class="nav-item"
+          ><span class="nav-icon">🤖</span> AI Models</a
+        >
+        <a href="/alerts" class="nav-item"
+          ><span class="nav-icon">🔔</span> Alerts</a
+        >
+        <a href="/reports" class="nav-item"
+          ><span class="nav-icon">📄</span> Reports</a
+        >
+        <a href="/admin" class="nav-item active" id="adminLink"
+          ><span class="nav-icon">⚙️</span> Admin Panel</a
+        >
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="user-avatar" id="userAvatar">A</div>
+          <div>
+            <div class="user-name" id="userName">Admin</div>
+            <div class="user-role" id="userRole" style="color: var(--red)">
+              ADMIN
+            </div>
+          </div>
+        </div>
+        <button class="btn-logout" onclick="logout()">LOGOUT</button>
+      </div>
+    </aside>
+    <main class="main">
+      <div class="topbar">
+        <div class="page-title">Admin <span>Panel</span></div>
+        <div class="admin-badge">
+          <div class="admin-dot"></div>
+          ADMIN ACCESS ONLY
+        </div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card red">
+          <div class="stat-label">TOTAL USERS</div>
+          <div class="stat-value" id="statUsers">3</div>
+          <div class="stat-sub">Registered accounts</div>
+        </div>
+        <div class="stat-card cyan">
+          <div class="stat-label">SERVERS MONITORED</div>
+          <div class="stat-value" id="statServers">9</div>
+          <div class="stat-sub">Active nodes</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">DB RECORDS</div>
+          <div class="stat-value" id="statRecords">—</div>
+          <div class="stat-sub">Total metric readings</div>
+        </div>
+        <div class="stat-card yellow">
+          <div class="stat-label">ACTIVE ALERTS</div>
+          <div class="stat-value" id="statAlerts">—</div>
+          <div class="stat-sub">Needs attention</div>
+        </div>
+      </div>
+      <div class="section-title">— SERVER MANAGEMENT —</div>
+      <div class="server-mgmt-grid">
+        <div class="panel">
+          <div class="panel-title">ADD NEW SERVER</div>
+          <div class="form-group">
+            <label class="form-label">SERVER NAME</label>
+            <input
+              type="text"
+              id="serverName"
+              class="form-input"
+              placeholder="e.g. Production DB"
+            />
+            <div class="form-hint">Human readable name shown on dashboard</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">SERVER ID</label>
+            <input
+              type="text"
+              id="serverId"
+              class="form-input"
+              placeholder="e.g. prod_db_01"
+            />
+            <div class="form-hint">
+              Auto-generated — lowercase and underscores only
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">SERVER TYPE</label>
+            <select id="serverType" class="form-select">
+              <option value="web">🌐 Web Server</option>
+              <option value="application">⚙️ Application Server</option>
+              <option value="database">🗄️ Database Server</option>
+              <option value="cache">⚡ Cache Server</option>
+              <option value="cloud">☁️ Cloud Instance</option>
+              <option value="cdn">📡 CDN Server</option>
+              <option value="network">🔥 Network Device</option>
+            </select>
+            <div class="form-hint">
+              Determines simulation profile and metrics range
+            </div>
+          </div>
+          <button class="btn-add" id="addBtn" onclick="addServer()">
+            + ADD SERVER
+          </button>
+        </div>
+        <div class="panel">
+          <div class="panel-title">
+            ALL SERVERS
+            <span
+              id="serverCount"
+              style="color: var(--muted); margin-left: 8px"
+            ></span>
+          </div>
+          <div style="overflow-y: auto; max-height: 340px">
+            <table class="server-table">
+              <thead>
+                <tr>
+                  <th>NAME</th>
+                  <th>TYPE</th>
+                  <th>KIND</th>
+                  <th>CPU</th>
+                  <th>RAM</th>
+                  <th>ACTION</th>
+                </tr>
+              </thead>
+              <tbody id="serverTableBody">
+                <tr>
+                  <td
+                    colspan="6"
+                    style="
+                      text-align: center;
+                      color: var(--muted);
+                      font-family: var(--font-mono);
+                      font-size: 11px;
+                      padding: 20px;
+                    "
+                  >
+                    Loading...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="section-title">— USER ACCOUNTS —</div>
+      <div class="users-grid" id="usersGrid"></div>
+      <div class="section-title">— PERMISSION MATRIX —</div>
+      <div class="matrix-wrap">
+        <table class="matrix-table">
+          <thead>
+            <tr>
+              <th>PERMISSION</th>
+              <th>ADMIN</th>
+              <th>ENGINEER</th>
+              <th>VIEWER</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>View all dashboard pages</td>
+              <td class="perm-yes">✓ YES</td>
+              <td class="perm-yes">✓ YES</td>
+              <td class="perm-yes">✓ YES</td>
+            </tr>
+            <tr>
+              <td>View live metrics and charts</td>
+              <td class="perm-yes">✓ YES</td>
+              <td class="perm-yes">✓ YES</td>
+              <td class="perm-yes">✓ YES</td>
+            </tr>
+            <tr>
+              <td>Download PDF / CSV reports</td>
+              <td class="perm-yes">✓ YES</td>
+              <td class="perm-yes">✓ YES</td>
+              <td class="perm-yes">✓ YES</td>
+            </tr>
+            <tr>
+              <td>Acknowledge alerts</td>
+              <td class="perm-yes">✓ YES</td>
+              <td class="perm-yes">✓ YES</td>
+              <td class="perm-no">✗ NO</td>
+            </tr>
+            <tr>
+              <td>Resolve alerts</td>
+              <td class="perm-yes">✓ YES</td>
+              <td class="perm-yes">✓ YES</td>
+              <td class="perm-no">✗ NO</td>
+            </tr>
+            <tr>
+              <td>Simulate server failure</td>
+              <td class="perm-yes">✓ YES</td>
+              <td class="perm-yes">✓ YES</td>
+              <td class="perm-no">✗ NO</td>
+            </tr>
+            <tr>
+              <td>Add / Remove servers</td>
+              <td class="perm-yes">✓ YES</td>
+              <td class="perm-no">✗ NO</td>
+              <td class="perm-no">✗ NO</td>
+            </tr>
+            <tr>
+              <td>Access Admin Panel</td>
+              <td class="perm-yes">✓ YES</td>
+              <td class="perm-no">✗ NO</td>
+              <td class="perm-no">✗ NO</td>
+            </tr>
+            <tr>
+              <td>View user accounts</td>
+              <td class="perm-yes">✓ YES</td>
+              <td class="perm-no">✗ NO</td>
+              <td class="perm-no">✗ NO</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="section-title">— SYSTEM INFORMATION —</div>
+      <div class="info-grid">
+        <div class="info-panel">
+          <div class="info-panel-title">PLATFORM INFO</div>
+          <div class="info-row">
+            <span class="info-key">PROJECT</span
+            ><span class="info-val">InfraGuard AI</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">VERSION</span
+            ><span class="info-val green">1.0.0</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">BACKEND</span
+            ><span class="info-val">Python + Flask</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">DATABASE</span
+            ><span class="info-val">SQLite</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">AI MODELS</span
+            ><span class="info-val green">4 Active</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">COLLECTION INTERVAL</span
+            ><span class="info-val">3 seconds</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">PREDICTION INTERVAL</span
+            ><span class="info-val">15 seconds</span>
+          </div>
+        </div>
+        <div class="info-panel">
+          <div class="info-panel-title">CURRENT STATUS</div>
+          <div class="info-row">
+            <span class="info-key">COLLECTOR</span
+            ><span class="info-val green">● RUNNING</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">AI ENGINE</span
+            ><span class="info-val green">● RUNNING</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">ALERT ENGINE</span
+            ><span class="info-val green">● RUNNING</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">SYSTEM HEALTH</span
+            ><span class="info-val green" id="sysHealth">— %</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">SERVERS ONLINE</span
+            ><span class="info-val" id="sysOnline">—</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">LAST UPDATED</span
+            ><span class="info-val" id="sysTime">—</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">TOTAL API ENDPOINTS</span
+            ><span class="info-val">19</span>
+          </div>
+        </div>
+      </div>
+    </main>
+    <div class="toast" id="toast"></div>
+    <script>
+      document
+        .getElementById("serverName")
+        .addEventListener("input", function () {
+          const id = this.value
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9\s]/g, "")
+            .replace(/\s+/g, "_");
+          document.getElementById("serverId").value = id;
+        });
+      async function addServer() {
+        const name = document.getElementById("serverName").value.trim();
+        const id = document.getElementById("serverId").value.trim();
+        const type = document.getElementById("serverType").value;
+        const btn = document.getElementById("addBtn");
+        if (!name || !id) {
+          showToast("Please enter server name and ID", true);
+          return;
+        }
+        if (!/^[a-z0-9_]+$/.test(id)) {
+          showToast("Server ID: lowercase, numbers and underscores only", true);
+          return;
+        }
+        btn.textContent = "ADDING...";
+        btn.disabled = true;
+        try {
+          const res = await fetch("/api/admin/servers/add", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              server_id: id,
+              server_name: name,
+              server_type: type,
+            }),
+          });
+          const data = await res.json();
+          if (data.success) {
+            showToast("✅ " + name + " added successfully!");
+            document.getElementById("serverName").value = "";
+            document.getElementById("serverId").value = "";
+            fetchServers();
+            fetchStatus();
+          } else {
+            showToast(data.message || "Failed to add server", true);
+          }
+        } catch (e) {
+          showToast("Connection error", true);
+        } finally {
+          btn.textContent = "+ ADD SERVER";
+          btn.disabled = false;
+        }
+      }
+      async function deleteServer(id, name) {
+        if (
+          !confirm(
+            'Delete server "' +
+              name +
+              '"?\n\nThis removes all its metrics, alerts and predictions permanently.',
+          )
+        )
+          return;
+        try {
+          const res = await fetch("/api/admin/servers/delete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ server_id: id }),
+          });
+          const data = await res.json();
+          if (data.success) {
+            showToast("✅ " + name + " deleted");
+            fetchServers();
+            fetchStatus();
+          } else {
+            showToast(data.message || "Failed to delete", true);
+          }
+        } catch (e) {
+          showToast("Connection error", true);
+        }
+      }
+      async function fetchServers() {
+        try {
+          const res = await fetch("/api/admin/servers");
+          if (res.status === 401) {
+            window.location.href = "/login";
+            return;
+          }
+          if (res.status === 403) {
+            window.location.href = "/overview";
+            return;
+          }
+          const servers = await res.json();
+          document.getElementById("statServers").textContent = servers.length;
+          document.getElementById("serverCount").textContent =
+            "(" + servers.length + " total)";
+          const tbody = document.getElementById("serverTableBody");
+          tbody.innerHTML = servers
+            .map((s) => {
+              const kindBadge = s.is_original
+                ? '<span class="original-badge">ORIGINAL</span>'
+                : '<span class="custom-badge">CUSTOM</span>';
+              const deleteBtn = s.is_original
+                ? '<button class="btn-delete" disabled>LOCK</button>'
+                : '<button class="btn-delete" onclick="deleteServer(\'' +
+                  s.id +
+                  "','" +
+                  s.name +
+                  "')\">DELETE</button>";
+              const cpuColor =
+                s.cpu > 85
+                  ? "var(--red)"
+                  : s.cpu > 70
+                    ? "var(--yellow)"
+                    : "var(--green)";
+              const ramColor =
+                s.ram > 85
+                  ? "var(--red)"
+                  : s.ram > 70
+                    ? "var(--yellow)"
+                    : "var(--green)";
+              return (
+                '<tr><td style="font-weight:600">' +
+                s.name +
+                '</td><td><span class="type-badge">' +
+                s.type.toUpperCase() +
+                "</span></td><td>" +
+                kindBadge +
+                '</td><td style="font-family:var(--font-mono);font-size:11px;color:' +
+                cpuColor +
+                '">' +
+                (s.cpu || 0).toFixed(1) +
+                '%</td><td style="font-family:var(--font-mono);font-size:11px;color:' +
+                ramColor +
+                '">' +
+                (s.ram || 0).toFixed(1) +
+                "%</td><td>" +
+                deleteBtn +
+                "</td></tr>"
+              );
+            })
+            .join("");
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      async function fetchUsers() {
+        try {
+          const res = await fetch("/api/admin/users");
+          const data = await res.json();
+          document.getElementById("statUsers").textContent = data.length;
+          const rc = {
+            admin: "admin-card",
+            engineer: "engineer-card",
+            viewer: "viewer-card",
+          };
+          const cc = {
+            admin: "#ff4757",
+            engineer: "#ffd700",
+            viewer: "#00ff88",
+          };
+          document.getElementById("usersGrid").innerHTML = data
+            .map((u) => {
+              const cls = rc[u.role] || "viewer-card",
+                color = cc[u.role] || "#00ff88";
+              const ll = u.last_login ? u.last_login.substring(0, 16) : "Never",
+                cr = u.created_at ? u.created_at.substring(0, 10) : "—";
+              return (
+                '<div class="user-card ' +
+                cls +
+                '"><div class="user-card-header"><div class="user-card-avatar">' +
+                u.username[0].toUpperCase() +
+                '</div><div><div class="user-card-name">' +
+                u.username +
+                '</div><div class="user-card-role">' +
+                u.role.toUpperCase() +
+                '</div></div></div><div class="user-card-detail"><span class="detail-key">USER ID</span><span class="detail-val">#' +
+                u.id +
+                '</span></div><div class="user-card-detail"><span class="detail-key">ROLE</span><span class="detail-val" style="color:' +
+                color +
+                ';font-weight:700">' +
+                u.role.toUpperCase() +
+                '</span></div><div class="user-card-detail"><span class="detail-key">CREATED</span><span class="detail-val">' +
+                cr +
+                '</span></div><div class="user-card-detail"><span class="detail-key">LAST LOGIN</span><span class="detail-val" style="color:' +
+                color +
+                '">' +
+                ll +
+                "</span></div></div>"
+              );
+            })
+            .join("");
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      async function fetchStatus() {
+        try {
+          const res = await fetch("/api/overview"),
+            data = await res.json();
+          const health = data.health || 100,
+            servers = data.servers || [],
+            alerts = data.alerts || {};
+          const online = servers.filter(
+            (s) => s.risk === "OK" || s.risk === "LOW",
+          ).length;
+          document.getElementById("sysHealth").textContent = health + "%";
+          document.getElementById("sysHealth").className =
+            "info-val " +
+            (health >= 80 ? "green" : health >= 60 ? "yellow" : "red");
+          document.getElementById("sysOnline").textContent =
+            online + " / " + servers.length;
+          document.getElementById("sysTime").textContent =
+            data.timestamp || "—";
+          document.getElementById("statAlerts").textContent = alerts.total || 0;
+        } catch (e) {}
+      }
+      async function fetchRecordCount() {
+        try {
+          const res = await fetch("/api/metrics/pc_local?limit=1"),
+            data = await res.json();
+          document.getElementById("statRecords").textContent = (
+            (data.count || 0) * 9
+          ).toLocaleString();
+        } catch (e) {}
+      }
+      async function loadUser() {
+        try {
+          const res = await fetch("/api/me"),
+            data = await res.json();
+          if (!data.logged_in) {
+            window.location.href = "/login";
+            return;
+          }
+          if (data.role !== "admin") {
+            window.location.href = "/overview";
+            return;
+          }
+          document.getElementById("userName").textContent = data.username;
+          document.getElementById("userRole").textContent =
+            data.role.toUpperCase();
+          document.getElementById("userAvatar").textContent =
+            data.username[0].toUpperCase();
+        } catch (e) {
+          window.location.href = "/login";
+        }
+      }
+      async function logout() {
+        await fetch("/api/logout", { method: "POST" });
+        window.location.href = "/login";
+      }
+      function showToast(msg, isError = false) {
+        const t = document.getElementById("toast");
+        t.textContent = msg;
+        t.className = "toast" + (isError ? " error" : "");
+        t.classList.add("show");
+        setTimeout(() => t.classList.remove("show"), 3500);
+      }
+      loadUser();
+      fetchServers();
+      fetchUsers();
+      fetchStatus();
+      fetchRecordCount();
+      setInterval(fetchServers, 5000);
+      setInterval(fetchStatus, 5000);
+    </script>
+  </body>
+</html>

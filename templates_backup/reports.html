@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InfraGuard AI — Reports</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg:        #020818;
+      --bg2:       #0a1628;
+      --card:      #0d1f3c;
+      --border:    #1a3a5c;
+      --accent:    #00d4ff;
+      --accent2:   #0088cc;
+      --green:     #00ff88;
+      --yellow:    #ffd700;
+      --orange:    #ff8c00;
+      --red:       #ff4757;
+      --text:      #e0e8f0;
+      --muted:     #4a6080;
+      --font-mono: 'Share Tech Mono', monospace;
+      --font-main: 'Rajdhani', sans-serif;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 220px; min-height: 100vh;
+      background: var(--bg2);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      position: fixed; top: 0; left: 0; z-index: 100;
+    }
+    .sidebar-logo { padding: 24px 20px; border-bottom: 1px solid var(--border); }
+    .sidebar-logo-title { font-size: 20px; font-weight: 700; letter-spacing: 1px; }
+    .sidebar-logo-title span { color: var(--accent); }
+    .sidebar-logo-sub { font-family: var(--font-mono); font-size: 9px; color: var(--muted); letter-spacing: 2px; margin-top: 4px; }
+    .sidebar-nav { flex: 1; padding: 16px 0; }
+    .nav-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 20px; color: var(--muted);
+      text-decoration: none; font-size: 14px; font-weight: 500;
+      letter-spacing: 1px; transition: all 0.2s ease;
+      border-left: 3px solid transparent;
+    }
+    .nav-item:hover { color: var(--text); background: rgba(0,212,255,0.05); }
+    .nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(0,212,255,0.08); }
+    .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+    .sidebar-footer { padding: 16px 20px; border-top: 1px solid var(--border); }
+    .user-info { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .user-avatar {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700; color: #000;
+    }
+    .user-name { font-size: 14px; font-weight: 600; color: var(--text); }
+    .user-role { font-family: var(--font-mono); font-size: 10px; color: var(--muted); }
+    .btn-logout {
+      width: 100%; padding: 8px; background: transparent;
+      border: 1px solid var(--border); border-radius: 6px;
+      color: var(--muted); font-family: var(--font-mono);
+      font-size: 11px; cursor: pointer; transition: all 0.2s ease; letter-spacing: 1px;
+    }
+    .btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+    /* ── Main ── */
+    .main { margin-left: 220px; flex: 1; padding: 24px; }
+    .topbar {
+      display: flex; align-items: center;
+      justify-content: space-between; margin-bottom: 24px;
+    }
+    .page-title { font-size: 24px; font-weight: 700; letter-spacing: 2px; }
+    .page-title span { color: var(--accent); }
+
+    /* ── Export cards ── */
+    .export-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .export-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px 24px;
+      text-align: center;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .export-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+    .export-card.pdf::before  { background: var(--red); }
+    .export-card.csv::before  { background: var(--green); }
+    .export-card.live::before { background: var(--accent); }
+
+    .export-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+    }
+    .export-icon { font-size: 40px; margin-bottom: 16px; }
+    .export-title {
+      font-size: 18px; font-weight: 700;
+      letter-spacing: 1px; margin-bottom: 8px;
+    }
+    .export-desc {
+      font-size: 13px; color: var(--muted);
+      line-height: 1.5; margin-bottom: 20px;
+    }
+    .export-btn {
+      padding: 10px 24px;
+      border-radius: 8px; border: none;
+      font-family: var(--font-main);
+      font-size: 14px; font-weight: 700;
+      letter-spacing: 1px; cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .export-card.pdf  .export-btn { background: var(--red);    color: #fff; }
+    .export-card.csv  .export-btn { background: var(--green);  color: #000; }
+    .export-card.live .export-btn { background: var(--accent); color: #000; }
+    .export-btn:hover { transform: translateY(-1px); opacity: 0.9; }
+    .export-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* ── Stats row ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 20px;
+    }
+    .stat-label {
+      font-family: var(--font-mono);
+      font-size: 9px; color: var(--muted);
+      letter-spacing: 2px; margin-bottom: 6px;
+    }
+    .stat-value {
+      font-family: var(--font-mono);
+      font-size: 24px; font-weight: 700;
+      color: var(--accent);
+    }
+
+    /* ── Server health table ── */
+    .section-title {
+      font-family: var(--font-mono);
+      font-size: 10px; color: var(--accent);
+      letter-spacing: 3px; margin-bottom: 16px;
+    }
+    .health-table-wrap {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+    .health-table {
+      width: 100%; border-collapse: collapse;
+    }
+    .health-table th {
+      background: var(--bg2);
+      font-family: var(--font-mono);
+      font-size: 10px; color: var(--accent);
+      letter-spacing: 2px; padding: 12px 16px;
+      text-align: left; border-bottom: 1px solid var(--border);
+    }
+    .health-table td {
+      padding: 12px 16px; font-size: 13px;
+      border-bottom: 1px solid var(--border);
+    }
+    .health-table tr:last-child td { border-bottom: none; }
+    .health-table tr:hover td { background: rgba(0,212,255,0.02); }
+
+    .risk-badge {
+      padding: 3px 8px; border-radius: 4px;
+      font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+    }
+    .risk-critical { background: rgba(255,71,87,0.2);  color: var(--red); }
+    .risk-high     { background: rgba(255,140,0,0.2);  color: var(--orange); }
+    .risk-medium   { background: rgba(0,212,255,0.2);  color: var(--accent); }
+    .risk-low      { background: rgba(0,255,136,0.2);  color: var(--green); }
+
+    /* ── Charts ── */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .chart-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .chart-title {
+      font-family: var(--font-mono);
+      font-size: 10px; color: var(--accent);
+      letter-spacing: 2px; margin-bottom: 16px;
+    }
+    .chart-wrap { position: relative; height: 200px; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: var(--card); border: 1px solid var(--green);
+      border-radius: 10px; padding: 14px 20px;
+      font-family: var(--font-mono); font-size: 12px; color: var(--green);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      transform: translateY(100px); opacity: 0;
+      transition: all 0.3s ease; z-index: 999;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+  </style>
+</head>
+<body>
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-title">Infra<span>Guard</span> AI</div>
+      <div class="sidebar-logo-sub">MONITORING PLATFORM</div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/overview" class="nav-item"><span class="nav-icon">📊</span> Overview</a>
+      <a href="/twin"     class="nav-item"><span class="nav-icon">🌐</span> Digital Twin</a>
+      <a href="/servers"  class="nav-item"><span class="nav-icon">🖥️</span> Servers</a>
+      <a href="/ai"       class="nav-item"><span class="nav-icon">🤖</span> AI Models</a>
+      <a href="/alerts"   class="nav-item"><span class="nav-icon">🔔</span> Alerts</a>
+      <a href="/reports"  class="nav-item active"><span class="nav-icon">📄</span> Reports</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar" id="userAvatar">A</div>
+        <div>
+          <div class="user-name" id="userName">Admin</div>
+          <div class="user-role" id="userRole">ADMIN</div>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="logout()">LOGOUT</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="page-title">Reports & <span>Export</span></div>
+    </div>
+
+    <!-- Export cards -->
+    <div class="export-grid">
+      <div class="export-card pdf">
+        <div class="export-icon">📄</div>
+        <div class="export-title">PDF Health Report</div>
+        <div class="export-desc">
+          Complete infrastructure health report with server status,
+          alert history, AI predictions and executive summary.
+        </div>
+        <button class="export-btn" onclick="downloadPDF()" id="pdfBtn">
+          DOWNLOAD PDF
+        </button>
+      </div>
+      <div class="export-card csv">
+        <div class="export-icon">📊</div>
+        <div class="export-title">CSV Data Export</div>
+        <div class="export-desc">
+          Raw metric history for all 9 servers exported as CSV.
+          Open in Excel for custom analysis and charting.
+        </div>
+        <button class="export-btn" onclick="downloadCSV()" id="csvBtn">
+          DOWNLOAD CSV
+        </button>
+      </div>
+      <div class="export-card live">
+        <div class="export-icon">🔄</div>
+        <div class="export-title">Live Snapshot</div>
+        <div class="export-desc">
+          Current real-time status of all servers, active alerts
+          and AI predictions as a JSON snapshot.
+        </div>
+        <button class="export-btn" onclick="downloadSnapshot()" id="snapBtn">
+          DOWNLOAD JSON
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">TOTAL METRICS COLLECTED</div>
+        <div class="stat-value" id="statMetrics">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">TOTAL ALERTS GENERATED</div>
+        <div class="stat-value" id="statAlerts">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">SERVERS MONITORED</div>
+        <div class="stat-value" id="statServers">9</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">REPORT GENERATED</div>
+        <div class="stat-value" id="statTime" style="font-size:14px; padding-top:4px;">—</div>
+      </div>
+    </div>
+
+    <!-- Server health table -->
+    <div class="section-title">— CURRENT SERVER HEALTH SUMMARY —</div>
+    <div class="health-table-wrap">
+      <table class="health-table">
+        <thead>
+          <tr>
+            <th>SERVER</th>
+            <th>TYPE</th>
+            <th>CPU %</th>
+            <th>RAM %</th>
+            <th>DISK %</th>
+            <th>TEMP °C</th>
+            <th>RISK LEVEL</th>
+            <th>TIME TO FAILURE</th>
+          </tr>
+        </thead>
+        <tbody id="healthTable">
+          <tr><td colspan="8" style="text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;padding:24px;">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title">CPU USAGE — ALL SERVERS</div>
+        <div class="chart-wrap"><canvas id="cpuChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">RAM USAGE — ALL SERVERS</div>
+        <div class="chart-wrap"><canvas id="ramChart"></canvas></div>
+      </div>
+    </div>
+
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    let cpuChart, ramChart;
+
+    function initCharts() {
+      const makeBar = (id, color) => {
+        const ctx = document.getElementById(id).getContext('2d');
+        return new Chart(ctx, {
+          type: 'bar',
+          data: { labels: [], datasets: [{
+            data: [],
+            backgroundColor: color + '44',
+            borderColor: color,
+            borderWidth: 1,
+            borderRadius: 4,
+          }]},
+          options: {
+            responsive: true, maintainAspectRatio: false, animation: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { ticks:{color:'#4a6080',font:{family:'Share Tech Mono',size:9}}, grid:{color:'#1a3a5c'} },
+              y: { min:0, max:100, ticks:{color:'#4a6080',font:{family:'Share Tech Mono',size:9}}, grid:{color:'#1a3a5c'} }
+            }
+          }
+        });
+      };
+      cpuChart = makeBar('cpuChart', '#00d4ff');
+      ramChart = makeBar('ramChart', '#00ff88');
+    }
+
+    function metricColor(val, warn=70, crit=90) {
+      if (val >= crit) return '#ff4757';
+      if (val >= warn) return '#ffd700';
+      return '#00ff88';
+    }
+
+    async function fetchReportData() {
+      try {
+        const res  = await fetch('/api/reports/data');
+        if (res.status === 401) { window.location.href='/login'; return; }
+        const data = await res.json();
+
+        // Stats
+        document.getElementById('statAlerts').textContent  = data.summary?.total_alerts  || 0;
+        document.getElementById('statServers').textContent = data.summary?.total_servers  || 9;
+        document.getElementById('statTime').textContent    = data.generated_at ? data.generated_at.substring(11,16) : '--:--';
+
+        // Health table
+        const tbody = document.getElementById('healthTable');
+        const servers = data.servers || [];
+
+        tbody.innerHTML = servers.map(s => {
+          const risk  = s.risk || 'LOW';
+          const col   = { CRITICAL:'#ff4757', HIGH:'#ff8c00', MEDIUM:'#00d4ff', LOW:'#00ff88' }[risk] || '#00ff88';
+          return `<tr>
+            <td style="font-weight:600">${s.name}</td>
+            <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">${s.type.toUpperCase()}</td>
+            <td style="font-family:var(--font-mono);color:${metricColor(s.cpu||0)}">${(s.cpu||0).toFixed(1)}%</td>
+            <td style="font-family:var(--font-mono);color:${metricColor(s.ram||0)}">${(s.ram||0).toFixed(1)}%</td>
+            <td style="font-family:var(--font-mono);color:${metricColor(s.disk||0,75,92)}">${(s.disk||0).toFixed(1)}%</td>
+            <td style="font-family:var(--font-mono);color:${metricColor(s.temperature||0,65,80)}">${(s.temperature||0).toFixed(1)}</td>
+            <td><span class="risk-badge risk-${risk.toLowerCase()}">${risk}</span></td>
+            <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">
+              No failure predicted
+            </td>
+          </tr>`;
+        }).join('');
+
+        // Charts
+        const labels = servers.map(s => s.name.split(' ')[0]);
+        const cpus   = servers.map(s => s.cpu  || 0);
+        const rams   = servers.map(s => s.ram  || 0);
+
+        cpuChart.data.labels = labels;
+        cpuChart.data.datasets[0].data = cpus;
+        cpuChart.data.datasets[0].backgroundColor = cpus.map(v => metricColor(v) + '44');
+        cpuChart.data.datasets[0].borderColor      = cpus.map(v => metricColor(v));
+        cpuChart.update('none');
+
+        ramChart.data.labels = labels;
+        ramChart.data.datasets[0].data = rams;
+        ramChart.data.datasets[0].backgroundColor = rams.map(v => metricColor(v) + '44');
+        ramChart.data.datasets[0].borderColor      = rams.map(v => metricColor(v));
+        ramChart.update('none');
+
+      } catch(e) { console.error(e); }
+    }
+
+    async function fetchMetricCount() {
+      try {
+        const res  = await fetch('/api/metrics/pc_local?limit=1');
+        const data = await res.json();
+        document.getElementById('statMetrics').textContent =
+          data.count ? (data.count * 9).toLocaleString() : '—';
+      } catch(e) {}
+    }
+
+    async function downloadPDF() {
+      const btn = document.getElementById('pdfBtn');
+      btn.textContent = 'GENERATING...';
+      btn.disabled    = true;
+      try {
+        const res = await fetch('/api/reports/pdf');
+        if (res.ok) {
+          const blob = await res.blob();
+          const url  = URL.createObjectURL(blob);
+          const a    = document.createElement('a');
+          a.href     = url;
+          a.download = `infraguard_report_${new Date().toISOString().slice(0,10)}.pdf`;
+          a.click();
+          URL.revokeObjectURL(url);
+          showToast('✅ PDF downloaded successfully!');
+        } else {
+          showToast('❌ PDF generation failed');
+        }
+      } catch(e) {
+        showToast('❌ Error: ' + e.message);
+      } finally {
+        btn.textContent = 'DOWNLOAD PDF';
+        btn.disabled    = false;
+      }
+    }
+
+    async function downloadCSV() {
+      const btn = document.getElementById('csvBtn');
+      btn.textContent = 'EXPORTING...';
+      btn.disabled    = true;
+      try {
+        const res = await fetch('/api/reports/csv');
+        if (res.ok) {
+          const blob = await res.blob();
+          const url  = URL.createObjectURL(blob);
+          const a    = document.createElement('a');
+          a.href     = url;
+          a.download = `infraguard_metrics_${new Date().toISOString().slice(0,10)}.csv`;
+          a.click();
+          URL.revokeObjectURL(url);
+          showToast('✅ CSV downloaded successfully!');
+        }
+      } catch(e) {
+        showToast('❌ Error: ' + e.message);
+      } finally {
+        btn.textContent = 'DOWNLOAD CSV';
+        btn.disabled    = false;
+      }
+    }
+
+    async function downloadSnapshot() {
+      const btn = document.getElementById('snapBtn');
+      btn.textContent = 'CAPTURING...';
+      btn.disabled    = true;
+      try {
+        const res  = await fetch('/api/overview');
+        const data = await res.json();
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url  = URL.createObjectURL(blob);
+        const a    = document.createElement('a');
+        a.href     = url;
+        a.download = `infraguard_snapshot_${new Date().toISOString().slice(0,10)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('✅ JSON snapshot downloaded!');
+      } catch(e) {
+        showToast('❌ Error: ' + e.message);
+      } finally {
+        btn.textContent = 'DOWNLOAD JSON';
+        btn.disabled    = false;
+      }
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    async function loadUser() {
+      try {
+        const res  = await fetch('/api/me');
+        const data = await res.json();
+        if (data.logged_in) {
+          document.getElementById('userName').textContent   = data.username;
+          document.getElementById('userRole').textContent  = data.role.toUpperCase();
+          document.getElementById('userAvatar').textContent= data.username[0].toUpperCase();
+        }
+      } catch(e) {}
+    }
+
+    async function logout() {
+      await fetch('/api/logout', { method: 'POST' });
+      window.location.href = '/login';
+    }
+
+    initCharts();
+    loadUser();
+    fetchReportData();
+    fetchMetricCount();
+    setInterval(fetchReportData, 5000);
+  </script>
+
+</body>
+</html>

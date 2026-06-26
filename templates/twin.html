@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InfraGuard AI — Digital Twin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:        #020818;
+      --bg2:       #0a1628;
+      --card:      #0d1f3c;
+      --border:    #1a3a5c;
+      --accent:    #00d4ff;
+      --accent2:   #0088cc;
+      --green:     #00ff88;
+      --yellow:    #ffd700;
+      --orange:    #ff8c00;
+      --red:       #ff4757;
+      --text:      #e0e8f0;
+      --muted:     #4a6080;
+      --font-mono: 'Share Tech Mono', monospace;
+      --font-main: 'Rajdhani', sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 220px;
+      min-height: 100vh;
+      background: var(--bg2);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0;
+      z-index: 100;
+    }
+
+    .sidebar-logo {
+      padding: 24px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sidebar-logo-title {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    .sidebar-logo-title span { color: var(--accent); }
+
+    .sidebar-logo-sub {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 2px;
+      margin-top: 4px;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 16px 0;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 20px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 1px;
+      transition: all 0.2s ease;
+      border-left: 3px solid transparent;
+    }
+
+    .nav-item:hover { color: var(--text); background: rgba(0,212,255,0.05); }
+    .nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(0,212,255,0.08); }
+    .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+    .sidebar-footer {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .user-info { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+
+    .user-avatar {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700; color: #000;
+    }
+
+    .user-name { font-size: 14px; font-weight: 600; color: var(--text); }
+    .user-role { font-family: var(--font-mono); font-size: 10px; color: var(--muted); }
+
+    .btn-logout {
+      width: 100%; padding: 8px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      letter-spacing: 1px;
+    }
+
+    .btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+    /* ── Main ── */
+    .main {
+      margin-left: 220px;
+      flex: 1;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .page-title { font-size: 24px; font-weight: 700; letter-spacing: 2px; }
+    .page-title span { color: var(--accent); }
+
+    .live-badge {
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(0,255,136,0.1);
+      border: 1px solid rgba(0,255,136,0.2);
+      border-radius: 20px;
+      padding: 6px 12px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--green);
+    }
+
+    .live-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: blink 1.5s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.2; }
+    }
+
+    /* ── Twin canvas area ── */
+    .twin-container {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 16px;
+    }
+
+    .canvas-wrap {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
+      min-height: 560px;
+    }
+
+    .canvas-wrap canvas {
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    /* ── Side panel ── */
+    .side-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .panel-title {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--accent);
+      letter-spacing: 2px;
+      margin-bottom: 12px;
+    }
+
+    /* ── Legend ── */
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 0;
+      font-size: 13px;
+    }
+
+    .legend-dot {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ── Node detail card ── */
+    .node-detail { display: none; }
+    .node-detail.show { display: block; }
+
+    .node-detail-name {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .node-detail-type {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 2px;
+      margin-bottom: 16px;
+    }
+
+    .detail-metric {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    .detail-metric:last-child { border-bottom: none; }
+
+    .detail-metric-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    .detail-metric-value {
+      font-family: var(--font-mono);
+      font-weight: 700;
+    }
+
+    /* ── Server list ── */
+    .server-list-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .server-list-item:hover { padding-left: 4px; }
+    .server-list-item:last-child { border-bottom: none; }
+
+    .server-list-name { font-size: 13px; font-weight: 500; }
+    .server-list-type {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--muted);
+    }
+
+    .risk-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-title">Infra<span>Guard</span> AI</div>
+      <div class="sidebar-logo-sub">MONITORING PLATFORM</div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/overview" class="nav-item"><span class="nav-icon">📊</span> Overview</a>
+      <a href="/twin"     class="nav-item active"><span class="nav-icon">🌐</span> Digital Twin</a>
+      <a href="/servers"  class="nav-item"><span class="nav-icon">🖥️</span> Servers</a>
+      <a href="/ai"       class="nav-item"><span class="nav-icon">🤖</span> AI Models</a>
+      <a href="/alerts"   class="nav-item"><span class="nav-icon">🔔</span> Alerts</a>
+      <a href="/reports"  class="nav-item"><span class="nav-icon">📄</span> Reports</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar" id="userAvatar">A</div>
+        <div>
+          <div class="user-name" id="userName">Admin</div>
+          <div class="user-role" id="userRole">ADMIN</div>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="logout()">LOGOUT</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="topbar">
+      <div class="page-title">Digital <span>Twin</span> Map</div>
+      <div class="live-badge"><div class="live-dot"></div> LIVE TOPOLOGY</div>
+    </div>
+
+    <div class="twin-container">
+
+      <!-- Canvas -->
+      <div class="canvas-wrap">
+        <canvas id="twinCanvas"></canvas>
+      </div>
+
+      <!-- Side panel -->
+      <div class="side-panel">
+
+        <!-- Legend -->
+        <div class="panel">
+          <div class="panel-title">RISK LEGEND</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#00ff88"></div> OK / Healthy</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#ffd700"></div> Warning</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#ff8c00"></div> High Risk</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#ff4757"></div> Critical</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#00d4ff"></div> Medium</div>
+        </div>
+
+        <!-- Node detail -->
+        <div class="panel node-detail" id="nodeDetail">
+          <div class="panel-title">NODE DETAIL</div>
+          <div class="node-detail-name" id="detailName">—</div>
+          <div class="node-detail-type" id="detailType">—</div>
+          <div class="detail-metric">
+            <span class="detail-metric-label">CPU</span>
+            <span class="detail-metric-value" id="detailCpu">—</span>
+          </div>
+          <div class="detail-metric">
+            <span class="detail-metric-label">RAM</span>
+            <span class="detail-metric-value" id="detailRam">—</span>
+          </div>
+          <div class="detail-metric">
+            <span class="detail-metric-label">DISK</span>
+            <span class="detail-metric-value" id="detailDisk">—</span>
+          </div>
+          <div class="detail-metric">
+            <span class="detail-metric-label">RISK</span>
+            <span class="detail-metric-value" id="detailRisk">—</span>
+          </div>
+          <div class="detail-metric">
+            <span class="detail-metric-label">STATUS</span>
+            <span class="detail-metric-value" id="detailStatus">—</span>
+          </div>
+        </div>
+
+        <!-- Server list -->
+        <div class="panel" style="flex:1; overflow-y:auto;">
+          <div class="panel-title">ALL NODES</div>
+          <div id="serverList"></div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // ── Node positions on canvas (percentage based) ──────────────────────
+    const NODE_POSITIONS = {
+      'pc_local':     { x: 0.12, y: 0.15 },
+      'firewall':     { x: 0.35, y: 0.15 },
+      'web_server_1': { x: 0.20, y: 0.40 },
+      'web_server_2': { x: 0.52, y: 0.40 },
+      'app_server':   { x: 0.36, y: 0.62 },
+      'db_mysql':     { x: 0.18, y: 0.82 },
+      'db_redis':     { x: 0.36, y: 0.82 },
+      'cloud_aws':    { x: 0.60, y: 0.62 },
+      'cdn_server':   { x: 0.75, y: 0.82 },
+    };
+
+    const NODE_ICONS = {
+      'physical':    '🖥',
+      'web':         '🌐',
+      'application': '⚙',
+      'database':    '🗄',
+      'cache':       '⚡',
+      'cloud':       '☁',
+      'cdn':         '📡',
+      'network':     '🔥',
+    };
+
+    const RISK_COLORS = {
+      'OK':       '#00ff88',
+      'LOW':      '#00ff88',
+      'MEDIUM':   '#00d4ff',
+      'WARNING':  '#ffd700',
+      'HIGH':     '#ff8c00',
+      'CRITICAL': '#ff4757',
+    };
+
+    let nodes = [];
+    let connections = [];
+    let selectedNode = null;
+    let canvas, ctx;
+    let animFrame = 0;
+
+    // ── Setup canvas ─────────────────────────────────────────────────────
+    function setupCanvas() {
+      canvas = document.getElementById('twinCanvas');
+      ctx    = canvas.getContext('2d');
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+      canvas.addEventListener('click', onCanvasClick);
+      canvas.addEventListener('mousemove', onCanvasHover);
+    }
+
+    function resizeCanvas() {
+      const wrap   = canvas.parentElement;
+      canvas.width  = wrap.clientWidth;
+      canvas.height = wrap.clientHeight;
+      drawAll();
+    }
+
+    // ── Get pixel position for a node ────────────────────────────────────
+    function nodePos(id) {
+      const pos = NODE_POSITIONS[id] || { x: 0.5, y: 0.5 };
+      return {
+        x: pos.x * canvas.width,
+        y: pos.y * canvas.height,
+      };
+    }
+
+    // ── Draw everything ──────────────────────────────────────────────────
+    function drawAll() {
+      if (!ctx) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawGrid();
+      drawConnections();
+      drawNodes();
+      animFrame++;
+    }
+
+    function drawGrid() {
+      ctx.strokeStyle = 'rgba(26,58,92,0.4)';
+      ctx.lineWidth   = 1;
+      const step = 40;
+      for (let x = 0; x < canvas.width; x += step) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+      }
+      for (let y = 0; y < canvas.height; y += step) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+      }
+    }
+
+    function drawConnections() {
+      connections.forEach(conn => {
+        const from = nodePos(conn.from);
+        const to   = nodePos(conn.to);
+
+        // Find risk of destination node
+        const toNode  = nodes.find(n => n.id === conn.to);
+        const risk    = toNode ? toNode.risk : 'OK';
+        const color   = RISK_COLORS[risk] || '#00d4ff';
+
+        // Animated pulse along the line
+        const pulse = (animFrame % 60) / 60;
+
+        // Draw line
+        ctx.beginPath();
+        ctx.moveTo(from.x, from.y);
+        ctx.lineTo(to.x, to.y);
+        ctx.strokeStyle = color + '44';
+        ctx.lineWidth   = 1.5;
+        ctx.setLineDash([6, 4]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Draw moving dot on line
+        const px = from.x + (to.x - from.x) * pulse;
+        const py = from.y + (to.y - from.y) * pulse;
+        ctx.beginPath();
+        ctx.arc(px, py, 3, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+      });
+    }
+
+    function drawNodes() {
+      nodes.forEach(node => {
+        const pos   = nodePos(node.id);
+        const risk  = node.risk || 'OK';
+        const color = RISK_COLORS[risk] || '#00ff88';
+        const isSelected = selectedNode && selectedNode.id === node.id;
+        const r     = isSelected ? 36 : 30;
+
+        // Glow effect
+        const glow = ctx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, r * 2);
+        glow.addColorStop(0, color + '33');
+        glow.addColorStop(1, 'transparent');
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, r * 2, 0, Math.PI * 2);
+        ctx.fillStyle = glow;
+        ctx.fill();
+
+        // Outer ring (pulsing for critical)
+        if (risk === 'CRITICAL' || risk === 'HIGH') {
+          const pulse = 0.5 + 0.5 * Math.sin(animFrame * 0.1);
+          ctx.beginPath();
+          ctx.arc(pos.x, pos.y, r + 6 + pulse * 4, 0, Math.PI * 2);
+          ctx.strokeStyle = color + '66';
+          ctx.lineWidth   = 2;
+          ctx.stroke();
+        }
+
+        // Node circle
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, r, 0, Math.PI * 2);
+        ctx.fillStyle   = '#0d1f3c';
+        ctx.fill();
+        ctx.strokeStyle = color;
+        ctx.lineWidth   = isSelected ? 3 : 2;
+        ctx.stroke();
+
+        // Icon
+        const icon = NODE_ICONS[node.type] || '🖥';
+        ctx.font      = `${r * 0.8}px serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(icon, pos.x, pos.y);
+
+        // Name label
+        ctx.font         = `bold 11px 'Rajdhani', sans-serif`;
+        ctx.fillStyle    = color;
+        ctx.textAlign    = 'center';
+        ctx.textBaseline = 'top';
+        ctx.fillText(node.name, pos.x, pos.y + r + 6);
+
+        // CPU label
+        const cpu = node.cpu || 0;
+        ctx.font      = `9px 'Share Tech Mono', monospace`;
+        ctx.fillStyle = '#4a6080';
+        ctx.fillText(`CPU: ${cpu.toFixed(0)}%`, pos.x, pos.y + r + 20);
+      });
+    }
+
+    // ── Canvas click — select node ────────────────────────────────────────
+    function onCanvasClick(e) {
+      const rect = canvas.getBoundingClientRect();
+      const mx   = e.clientX - rect.left;
+      const my   = e.clientY - rect.top;
+
+      selectedNode = null;
+      nodes.forEach(node => {
+        const pos  = nodePos(node.id);
+        const dist = Math.hypot(mx - pos.x, my - pos.y);
+        if (dist < 34) selectedNode = node;
+      });
+
+      if (selectedNode) showNodeDetail(selectedNode);
+      drawAll();
+    }
+
+    function onCanvasHover(e) {
+      const rect = canvas.getBoundingClientRect();
+      const mx   = e.clientX - rect.left;
+      const my   = e.clientY - rect.top;
+      let hovering = false;
+      nodes.forEach(node => {
+        const pos = nodePos(node.id);
+        if (Math.hypot(mx - pos.x, my - pos.y) < 34) hovering = true;
+      });
+      canvas.style.cursor = hovering ? 'pointer' : 'default';
+    }
+
+    // ── Show node detail panel ────────────────────────────────────────────
+    function showNodeDetail(node) {
+      const panel = document.getElementById('nodeDetail');
+      panel.classList.add('show');
+
+      const color = RISK_COLORS[node.risk] || '#00ff88';
+      document.getElementById('detailName').textContent   = node.name;
+      document.getElementById('detailName').style.color   = color;
+      document.getElementById('detailType').textContent   = node.type.toUpperCase();
+      document.getElementById('detailCpu').textContent    = (node.cpu  || 0).toFixed(1) + '%';
+      document.getElementById('detailRam').textContent    = (node.ram  || 0).toFixed(1) + '%';
+      document.getElementById('detailDisk').textContent   = (node.disk || 0).toFixed(1) + '%';
+      document.getElementById('detailRisk').textContent   = node.risk || 'OK';
+      document.getElementById('detailRisk').style.color   = color;
+      document.getElementById('detailStatus').textContent = node.status || 'online';
+    }
+
+    // ── Render server list ────────────────────────────────────────────────
+    function renderServerList() {
+      const list = document.getElementById('serverList');
+      list.innerHTML = nodes.map(n => {
+        const color = RISK_COLORS[n.risk] || '#00ff88';
+        return `
+          <div class="server-list-item" onclick="selectNodeById('${n.id}')">
+            <div>
+              <div class="server-list-name">${n.name}</div>
+              <div class="server-list-type">${n.type.toUpperCase()}</div>
+            </div>
+            <div class="risk-dot" style="background:${color}"></div>
+          </div>`;
+      }).join('');
+    }
+
+    function selectNodeById(id) {
+      selectedNode = nodes.find(n => n.id === id) || null;
+      if (selectedNode) showNodeDetail(selectedNode);
+      drawAll();
+    }
+
+    // ── Fetch twin data ───────────────────────────────────────────────────
+    async function fetchTwin() {
+      try {
+        const res  = await fetch('/api/twin');
+        if (res.status === 401) { window.location.href = '/login'; return; }
+        const data = await res.json();
+
+        nodes       = data.nodes       || [];
+        connections = data.connections || [];
+
+        renderServerList();
+
+        // Update selected node if still present
+        if (selectedNode) {
+          const updated = nodes.find(n => n.id === selectedNode.id);
+          if (updated) { selectedNode = updated; showNodeDetail(updated); }
+        }
+
+      } catch(e) { console.error(e); }
+    }
+
+    // ── Animation loop ────────────────────────────────────────────────────
+    function animate() {
+      drawAll();
+      requestAnimationFrame(animate);
+    }
+
+    // ── Load user ─────────────────────────────────────────────────────────
+    async function loadUser() {
+      try {
+        const res  = await fetch('/api/me');
+        const data = await res.json();
+        if (data.logged_in) {
+          document.getElementById('userName').textContent   = data.username;
+          document.getElementById('userRole').textContent  = data.role.toUpperCase();
+          document.getElementById('userAvatar').textContent= data.username[0].toUpperCase();
+        }
+      } catch(e) {}
+    }
+
+    async function logout() {
+      await fetch('/api/logout', { method: 'POST' });
+      window.location.href = '/login';
+    }
+
+    // ── Start ─────────────────────────────────────────────────────────────
+    setupCanvas();
+    loadUser();
+    fetchTwin();
+    setInterval(fetchTwin, 3000);
+    animate();
+  </script>
+
+</body>
+</html>
